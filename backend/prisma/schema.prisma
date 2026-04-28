@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////
+// USER & RBAC
+//////////////////////
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  username   String   @unique
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+
+  roles  UserRole[]
+  cart   Cart?
+  orders Order[]
+}
+
+model Role {
+  role_id   Int    @id @default(autoincrement())
+  role_name String @unique
+
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  permission_id   Int    @id @default(autoincrement())
+  permission_name String @unique
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  user_id Int
+  role_id Int
+
+  user User @relation(fields: [user_id], references: [user_id])
+  role Role @relation(fields: [role_id], references: [role_id])
+
+  @@id([user_id, role_id])
+}
+
+model RolePermission {
+  role_id       Int
+  permission_id Int
+
+  role       Role       @relation(fields: [role_id], references: [role_id])
+  permission Permission @relation(fields: [permission_id], references: [permission_id])
+
+  @@id([role_id, permission_id])
+}
+
+//////////////////////
+// PRODUCT CORE
+//////////////////////
+
+model Category {
+  category_id Int    @id @default(autoincrement())
+  name        String
+
+  products   Product[]
+  attributes Attribute[]
+}
+
+model Brand {
+  brand_id Int     @id @default(autoincrement())
+  name     String
+  country  String?
+
+  products Product[]
+}
+
+model Product {
+  product_id  Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  category_id Int?
+  brand_id    Int?
+
+  category Category? @relation(fields: [category_id], references: [category_id])
+  brand    Brand?    @relation(fields: [brand_id], references: [brand_id])
+
+  variants ProductVariant[]
+  specs    ProductAttributeValue[]
+}
+
+//////////////////////
+// VARIANT (SKU)
+//////////////////////
+
+model ProductVariant {
+  variant_id Int @id @default(autoincrement())
+  product_id Int
+
+  sku   String? @unique
+  price Decimal
+  stock Int     @default(0)
+
+  product Product @relation(fields: [product_id], references: [product_id])
+
+  attributes  VariantAttributeValue[]
+  images      VariantImage[]
+  cart_items  CartItem[]
+  order_items OrderItem[]
+}
+
+//////////////////////
+// EAV
+//////////////////////
+
+model Attribute {
+  attribute_id Int           @id @default(autoincrement())
+  name         String
+  type         AttributeType
+  category_id  Int?
+
+  category Category? @relation(fields: [category_id], references: [category_id])
+
+  values         AttributeValue[]
+  product_values ProductAttributeValue[]
+}
+
+enum AttributeType {
+  VARIANT
+  SPEC
+}
+
+model AttributeValue {
+  value_id     Int    @id @default(autoincrement())
+  attribute_id Int
+  value        String
+
+  attribute Attribute @relation(fields: [attribute_id], references: [attribute_id])
+
+  variants VariantAttributeValue[]
+}
+
+model VariantAttributeValue {
+  variant_id Int
+  value_id   Int
+
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+  value   AttributeValue @relation(fields: [value_id], references: [value_id])
+
+  @@id([variant_id, value_id])
+}
+
+model ProductAttributeValue {
+  product_id   Int
+  attribute_id Int
+  value        String
+
+  product   Product   @relation(fields: [product_id], references: [product_id])
+  attribute Attribute @relation(fields: [attribute_id], references: [attribute_id])
+
+  @@id([product_id, attribute_id])
+}
+
+//////////////////////
+// IMAGES
+//////////////////////
+
+model VariantImage {
+  image_id   Int @id @default(autoincrement())
+  variant_id Int
+
+  image_url  String
+  is_main    Boolean @default(false)
+  sort_order Int     @default(0)
+
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+}
+
+//////////////////////
+// CART
+//////////////////////
+
+model Cart {
+  cart_id Int @id @default(autoincrement())
+  user_id Int @unique
+
+  user  User       @relation(fields: [user_id], references: [user_id])
+  items CartItem[]
+}
+
+model CartItem {
+  cart_id    Int
+  variant_id Int
+  quantity   Int
+
+  cart    Cart           @relation(fields: [cart_id], references: [cart_id])
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+
+  @@id([cart_id, variant_id])
+}
+
+//////////////////////
+// ORDER
+//////////////////////
+
+model Order {
+  order_id Int @id @default(autoincrement())
+  user_id  Int
+
+  order_date DateTime @default(now())
+  status     String
+  total      Decimal
+  address    String
+
+  user     User        @relation(fields: [user_id], references: [user_id])
+  items    OrderItem[]
+  payments Payment[]
+}
+
+model OrderItem {
+  order_id   Int
+  variant_id Int
+
+  price    Decimal
+  quantity Int
+
+  order   Order          @relation(fields: [order_id], references: [order_id])
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+
+  @@id([order_id, variant_id])
+}
+
+//////////////////////
+// PAYMENT
+//////////////////////
+
+model Payment {
+  payment_id Int @id @default(autoincrement())
+  order_id   Int
+
+  method  String
+  status  String
+  paid_at DateTime?
+
+  order Order @relation(fields: [order_id], references: [order_id])
+}
