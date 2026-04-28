@@ -11,6 +11,20 @@ const normalizeProduct = raw_product => {
 
   const normalized_variants = (raw_product.variants || []).map(variant_item => ({
     ...variant_item,
+    images: (variant_item.images_detail || variant_item.images || []).map(
+      image_item =>
+        typeof image_item === 'string'
+          ? { image_url: image_item }
+          : image_item
+    ),
+    attributes: (variant_item.attributes || variant_item.attributes_detail || []).map(
+      attribute_item => ({
+        attribute: attribute_item.attribute,
+        value: attribute_item.value,
+        value_id: attribute_item.value_id
+      })
+    ),
+    color: variant_item.color || '',
     price: Number(variant_item.price),
     stock: Number(variant_item.stock)
   }))
@@ -48,7 +62,14 @@ export const useProductDetail = product_id => {
           params: { category_id: normalized_product.category.category_id }
         })
 
-        const filtered_products = (related_response.data.data || [])
+        const related_data = related_response.data?.data
+        const related_items = Array.isArray(related_data)
+          ? related_data
+          : Array.isArray(related_data?.items)
+            ? related_data.items
+            : []
+
+        const filtered_products = related_items
           .filter(item => item.product_id !== normalized_product.product_id)
           .slice(0, 4)
 

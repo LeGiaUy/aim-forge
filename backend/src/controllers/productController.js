@@ -3,8 +3,8 @@ import { sendSuccess } from "../utils/response.js";
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { category_id, brand_id, min_price, max_price } = req.query;
-    const data = await productService.getProducts({ category_id, brand_id, min_price, max_price });
+    const { category_id, brand_id, min_price, max_price, search, page, limit } = req.query;
+    const data = await productService.getProducts({ category_id, brand_id, min_price, max_price, search, page, limit });
     return sendSuccess(res, data, "Products retrieved");
   } catch (err) {
     next(err);

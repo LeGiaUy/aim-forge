@@ -7,15 +7,23 @@ import LoginPage from './pages/LoginPage.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import AdminLayout from './pages/admin/AdminLayout.jsx'
+import AttributeList from './pages/admin/attributes/AttributeList.jsx'
+import BrandList from './pages/admin/brands/BrandList.jsx'
+import CategoryList from './pages/admin/categories/CategoryList.jsx'
+import ProductList from './pages/admin/products/ProductList.jsx'
+import ProductCreate from './pages/admin/products/ProductCreate.jsx'
+import ProductEdit from './pages/admin/products/ProductEdit.jsx'
 
 function App() {
   const location = useLocation()
   const is_auth_page =
     location.pathname === '/login' || location.pathname === '/register'
+  const is_admin_page = location.pathname.startsWith('/admin')
 
   return (
     <div className='flex min-h-screen flex-col'>
-      {!is_auth_page && <Navbar />}
+      {!is_auth_page && !is_admin_page && <Navbar />}
       <div className='flex-1'>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -30,9 +38,19 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* ─── Admin Routes ─── */}
+          <Route path='/admin' element={<AdminLayout />}>
+            <Route path='products' element={<ProductList />} />
+            <Route path='products/create' element={<ProductCreate />} />
+            <Route path='products/edit/:id' element={<ProductEdit />} />
+            <Route path='categories' element={<CategoryList />} />
+            <Route path='brands' element={<BrandList />} />
+            <Route path='attributes' element={<AttributeList />} />
+          </Route>
         </Routes>
       </div>
-      {!is_auth_page && <Footer />}
+      {!is_auth_page && !is_admin_page && <Footer />}
     </div>
   )
 }

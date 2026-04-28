@@ -19,7 +19,14 @@ export function useProducts(filters = {}) {
 
     api.get("/products", { params })
       .then((res) => {
-        if (!cancelled) setProducts(res.data.data || []);
+        const data = res.data?.data;
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+            ? data.items
+            : [];
+
+        if (!cancelled) setProducts(items);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);

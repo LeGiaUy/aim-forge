@@ -38,7 +38,7 @@ export default function RelatedProducts({ products }) {
                 {item.name}
               </h3>
               <p className='font-display text-lg font-bold text-[#9f67ff]'>
-                {formatCurrency(item.lowest_price)}
+                {formatCurrency(item.min_price ?? item.lowest_price)}
               </p>
             </div>
           </Link>

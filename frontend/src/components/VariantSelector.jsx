@@ -6,6 +6,10 @@ export default function VariantSelector({
   onVariantChange
 }) {
   const selected_map = useMemo(() => {
+    if (selected_variant?.color) {
+      return { Color: selected_variant.color }
+    }
+
     const next_map = {}
     ;(selected_variant?.attributes || []).forEach(item => {
       next_map[item.attribute] = item.value
@@ -14,6 +18,34 @@ export default function VariantSelector({
   }, [selected_variant])
 
   const variant_groups = useMemo(() => {
+    const has_color_variants = variants.some(variant_item => variant_item.color)
+    if (has_color_variants) {
+      const color_values = []
+
+      variants.forEach(variant_item => {
+        const current_color = variant_item.color?.trim()
+        if (!current_color) return
+
+        const existing_item = color_values.find(
+          value_item => value_item.value === current_color
+        )
+
+        if (!existing_item) {
+          color_values.push({
+            value: current_color,
+            has_stock: variant_item.stock > 0
+          })
+          return
+        }
+
+        if (variant_item.stock > 0) {
+          existing_item.has_stock = true
+        }
+      })
+
+      return { Color: color_values }
+    }
+
     const group_map = {}
 
     variants.forEach(variant_item => {
@@ -44,6 +76,17 @@ export default function VariantSelector({
   }, [variants])
 
   const pickVariantByValue = (attribute_name, value_name) => {
+    if (attribute_name === 'Color') {
+      const in_stock_variant = variants.find(
+        variant_item =>
+          variant_item.color === value_name &&
+          variant_item.stock > 0
+      )
+      if (in_stock_variant) return in_stock_variant
+
+      return variants.find(variant_item => variant_item.color === value_name)
+    }
+
     const candidate_map = {
       ...selected_map,
       [attribute_name]: value_name
@@ -82,8 +125,11 @@ export default function VariantSelector({
       <div className='space-y-4'>
         {Object.entries(variant_groups).map(([attribute_name, values]) => (
           <div key={attribute_name} className='space-y-2'>
-            <p className='text-xs font-display uppercase tracking-wider text-[#94a3b8]'>
+            <p className='flex items-center text-xs font-display uppercase tracking-wider text-[#94a3b8]'>
               {attribute_name}
+              {attribute_name === 'Color' && selected_map[attribute_name] && (
+                <span className='ml-2 text-[#f8fafc]'>{selected_map[attribute_name]}</span>
+              )}
             </p>
 
             <div className='flex flex-wrap gap-2'>
@@ -93,6 +139,34 @@ export default function VariantSelector({
                   attribute_name,
                   value_item.value
                 )
+
+                if (attribute_name === 'Color' && matched_variant?.images?.[0]) {
+                  return (
+                    <button
+                      key={`${attribute_name}-${value_item.value}`}
+                      type='button'
+                      disabled={!matched_variant || matched_variant.stock <= 0}
+                      onClick={() => matched_variant && onVariantChange(matched_variant)}
+                      className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border transition ${
+                        is_selected
+                          ? 'border-[#9f67ff] shadow-[0_0_12px_rgba(124,58,237,0.45)]'
+                          : 'border-white/10 hover:border-cyan-400/60'
+                      } ${
+                        !matched_variant || matched_variant.stock <= 0
+                          ? 'cursor-not-allowed opacity-45'
+                          : 'cursor-pointer'
+                      }`}
+                      title={value_item.value}
+                    >
+                      <img
+                        src={matched_variant.images[0].image_url}
+                        alt={value_item.value}
+                        loading='lazy'
+                        className='h-full w-full object-cover'
+                      />
+                    </button>
+                  )
+                }
 
                 return (
                   <button

@@ -90,6 +90,7 @@ model Product {
 
   category_id Int?
   brand_id    Int?
+  is_active   Boolean @default(true)
 
   category Category? @relation(fields: [category_id], references: [category_id])
   brand    Brand?    @relation(fields: [brand_id], references: [brand_id])
@@ -106,9 +107,11 @@ model ProductVariant {
   variant_id Int @id @default(autoincrement())
   product_id Int
 
-  sku   String? @unique
-  price Decimal
-  stock Int     @default(0)
+  color     String?
+  sku       String? @unique
+  price     Decimal
+  stock     Int     @default(0)
+  is_active Boolean @default(true)
 
   product Product @relation(fields: [product_id], references: [product_id])
 
@@ -125,18 +128,12 @@ model ProductVariant {
 model Attribute {
   attribute_id Int           @id @default(autoincrement())
   name         String
-  type         AttributeType
   category_id  Int?
 
   category Category? @relation(fields: [category_id], references: [category_id])
 
   values         AttributeValue[]
   product_values ProductAttributeValue[]
-}
-
-enum AttributeType {
-  VARIANT
-  SPEC
 }
 
 model AttributeValue {

@@ -42,7 +42,15 @@ export default function ProductCard({ product, index = 0 }) {
   const [imgError, setImgError] = useState(false);
   const [added, setAdded]       = useState(false);
 
-  const { product_id, name, brand, lowest_price, representative_variant } = product;
+  const {
+    product_id,
+    name,
+    brand,
+    min_price,
+    lowest_price,
+    representative_variant
+  } = product;
+  const display_price = min_price ?? lowest_price
   const imageUrl = representative_variant?.main_image?.image_url;
 
   const handleAddToCart = (e) => {
@@ -130,7 +138,9 @@ export default function ProductCard({ product, index = 0 }) {
         <div className="mt-3 flex items-center justify-between gap-2">
           <div>
             <span className="font-display text-xl font-bold text-[#7c3aed]">
-              ${lowest_price?.toFixed(2) ?? "—"}
+              {display_price !== null && display_price !== undefined
+                ? `$${Number(display_price).toFixed(2)}`
+                : "—"}
             </span>
           </div>
 
