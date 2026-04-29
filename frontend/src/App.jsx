@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import CartPage from './pages/CartPage.jsx'
 import AdminLayout from './pages/admin/AdminLayout.jsx'
 import AttributeList from './pages/admin/attributes/AttributeList.jsx'
 import BrandList from './pages/admin/brands/BrandList.jsx'
@@ -31,6 +32,14 @@ function App() {
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
           <Route
+            path='/cart'
+            element={
+              <PrivateRoute>
+                <CartPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path='/profile'
             element={
               <PrivateRoute>
@@ -45,8 +54,8 @@ function App() {
             <Route path='products/create' element={<ProductCreate />} />
             <Route path='products/edit/:id' element={<ProductEdit />} />
             <Route path='categories' element={<CategoryList />} />
-            <Route path='brands' element={<BrandList />} />
             <Route path='attributes' element={<AttributeList />} />
+            <Route path='brands' element={<BrandList />} />
           </Route>
         </Routes>
       </div>

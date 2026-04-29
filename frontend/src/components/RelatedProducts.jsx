@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom'
-
-const formatCurrency = price_value => {
-  if (price_value === null || price_value === undefined) return '$0.00'
-  return `$${Number(price_value).toFixed(2)}`
-}
+import { formatVnd } from '../utils/currency.js'
 
 export default function RelatedProducts({ products }) {
   if (!products?.length) return null
@@ -38,7 +34,7 @@ export default function RelatedProducts({ products }) {
                 {item.name}
               </h3>
               <p className='font-display text-lg font-bold text-[#9f67ff]'>
-                {formatCurrency(item.min_price ?? item.lowest_price)}
+                {formatVnd(item.price)}
               </p>
             </div>
           </Link>

@@ -17,6 +17,14 @@ export const adminProductApi = {
   },
   delete(id) {
     return api.delete(`/products/${id}`)
+  },
+  uploadImages(form_data) {
+    return api.post('/uploads/products', form_data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 60000
+    })
   }
 }
 
@@ -47,6 +55,14 @@ export const adminCategoryApi = {
   },
   delete(id) {
     return api.delete(`/categories/${id}`)
+  },
+  uploadImages(form_data) {
+    return api.post('/uploads/categories', form_data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 60000
+    })
   }
 }
 
@@ -62,5 +78,13 @@ export const adminBrandApi = {
   },
   delete(id) {
     return api.delete(`/brands/${id}`)
+  },
+  uploadImages(form_data) {
+    return api.post('/uploads/brands', form_data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 60000
+    })
   }
 }

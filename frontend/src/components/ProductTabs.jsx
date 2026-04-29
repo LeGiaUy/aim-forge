@@ -66,7 +66,7 @@ export default function ProductTabs({ description, specs }) {
 
       {active_tab === 'shipping' && (
         <div className='space-y-3 pt-4 text-sm text-[#cbd5e1]'>
-          <p>Free shipping for orders over $99</p>
+          <p>Free shipping for orders over 2.500.000₫</p>
           <p>Standard delivery: 3-5 business days</p>
           <p>Express delivery: 1-2 business days</p>
           <p>30-day return policy for sealed products</p>

@@ -14,8 +14,6 @@ export function useProducts(filters = {}) {
     const params = {};
     if (filters.category_id) params.category_id = filters.category_id;
     if (filters.brand_id)    params.brand_id    = filters.brand_id;
-    if (filters.min_price)   params.min_price   = filters.min_price;
-    if (filters.max_price)   params.max_price   = filters.max_price;
 
     api.get("/products", { params })
       .then((res) => {

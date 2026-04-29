@@ -5,6 +5,7 @@ import {
   adminCategoryApi,
   adminProductApi
 } from '../../../services/adminApi.js'
+import { formatVnd } from '../../../utils/currency.js'
 
 export default function ProductList() {
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ export default function ProductList() {
 
   const formatPrice = (price) => {
     if (price == null) return '—'
-    return `$${Number(price).toFixed(2)}`
+    return formatVnd(price)
   }
 
   return (
@@ -142,7 +143,7 @@ export default function ProductList() {
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Product</th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Category</th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Brand</th>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Price Range</th>
+              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Price</th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Stock</th>
               <th className='px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
             </tr>
@@ -176,10 +177,9 @@ export default function ProductList() {
                   <td className='px-5 py-4 text-[#94a3b8]'>{p.category?.name || '—'}</td>
                   <td className='px-5 py-4 text-[#94a3b8]'>{p.brand?.name || '—'}</td>
                   <td className='px-5 py-4'>
-                    {p.min_price != null ? (
+                    {p.price != null ? (
                       <span className='text-emerald-400'>
-                        {formatPrice(p.min_price)}
-                        {p.max_price && p.max_price !== p.min_price && ` – ${formatPrice(p.max_price)}`}
+                        {formatPrice(p.price)}
                       </span>
                     ) : (
                       <span className='text-[#64748b]'>—</span>

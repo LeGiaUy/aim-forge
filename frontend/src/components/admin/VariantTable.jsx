@@ -7,7 +7,9 @@ export default function VariantTable({
   onImageChange,
   onAddImage,
   onRemoveImage,
-  onRemoveVariant
+  onRemoveVariant,
+  onUploadImages,
+  upload_loading_map = {}
 }) {
   if (!variants.length) {
     return (
@@ -24,9 +26,8 @@ export default function VariantTable({
           <tr>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Color</th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>SKU</th>
-            <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Price (USD)</th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Stock</th>
-            <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Images (URLs)</th>
+            <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Images</th>
             <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
           </tr>
         </thead>
@@ -49,17 +50,6 @@ export default function VariantTable({
                   onChange={e => onRowChange(vi, 'sku', e.target.value)}
                   placeholder='e.g. MOUSE-BLK-01'
                   className='admin-input w-40'
-                />
-              </td>
-              <td className='px-4 py-3'>
-                <input
-                  type='number'
-                  value={v.price}
-                  onChange={e => onRowChange(vi, 'price', e.target.value)}
-                  placeholder='0.00'
-                  min='0'
-                  step='0.01'
-                  className='admin-input w-28'
                 />
               </td>
               <td className='px-4 py-3'>
@@ -100,6 +90,23 @@ export default function VariantTable({
                   >
                     + Add image
                   </button>
+                  <label className='mt-1 inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
+                    {upload_loading_map[vi] ? 'Uploading...' : '+ Upload files'}
+                    <input
+                      type='file'
+                      accept='image/*'
+                      multiple
+                      className='hidden'
+                      disabled={upload_loading_map[vi]}
+                      onChange={e => {
+                        const files = Array.from(e.target.files || [])
+                        if (files.length > 0) {
+                          onUploadImages(vi, files)
+                        }
+                        e.target.value = ''
+                      }}
+                    />
+                  </label>
                 </div>
               </td>
               <td className='px-4 py-3 text-right'>

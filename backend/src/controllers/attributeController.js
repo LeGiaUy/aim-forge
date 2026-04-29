@@ -13,6 +13,11 @@ export const getAttributes = async (req, res, next) => {
 
 export const createAttribute = async (req, res, next) => {
   try {
+    if (Array.isArray(req.body?.names)) {
+      const data = await attributeService.createAttributesBatch(req.body || {});
+      return sendSuccess(res, data, "Attributes created", 201);
+    }
+
     const data = await attributeService.createAttribute(req.body || {});
     return sendSuccess(res, data, "Attribute created", 201);
   } catch (err) {

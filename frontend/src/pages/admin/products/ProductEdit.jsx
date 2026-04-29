@@ -28,6 +28,7 @@ export default function ProductEdit() {
     handleVariantImageChange,
     addVariantImage,
     removeVariantImage,
+    appendVariantImages,
     addVariantRow,
     removeVariantRow,
     buildPayload
@@ -50,12 +51,31 @@ export default function ProductEdit() {
   }, [id])
 
   const spec_attributes = attributes
+
+  const [upload_loading_map, setUploadLoadingMap] = useState({})
+
+  const handleUploadVariantImages = async (variant_index, files) => {
+    const form_data = new FormData()
+    files.forEach(file_item => form_data.append('images', file_item))
+
+    setUploadLoadingMap(prev => ({ ...prev, [variant_index]: true }))
+    try {
+      const response = await adminProductApi.uploadImages(form_data)
+      const image_urls = response.data.data?.image_urls || []
+      appendVariantImages(variant_index, image_urls)
+    } catch (err) {
+      setError(err.message || 'Failed to upload image files')
+    } finally {
+      setUploadLoadingMap(prev => ({ ...prev, [variant_index]: false }))
+    }
+  }
+
   const handleSubmit = async e => {
     e.preventDefault()
     setError('')
 
-    if (!form.name || !form.category_id || !form.brand_id) {
-      setError('Name, category, and brand are required.')
+    if (!form.name || !form.price || !form.category_id || !form.brand_id) {
+      setError('Name, price, category, and brand are required.')
       return
     }
     if (!variants.length) {
@@ -65,10 +85,6 @@ export default function ProductEdit() {
     for (const v of variants) {
       if (!v.color?.trim()) {
         setError('Please enter color for each variant.')
-        return
-      }
-      if (!v.price || Number(v.price) <= 0) {
-        setError(`Please enter a valid price for variant "${v.color}".`)
         return
       }
     }
@@ -129,6 +145,17 @@ export default function ProductEdit() {
                 type='text'
                 value={form.name}
                 onChange={e => handleFormChange('name', e.target.value)}
+                className='admin-input w-full'
+              />
+            </div>
+            <div>
+              <label className='admin-label'>Price (VND) *</label>
+              <input
+                type='number'
+                min='0'
+                step='1'
+                value={form.price}
+                onChange={e => handleFormChange('price', e.target.value)}
                 className='admin-input w-full'
               />
             </div>
@@ -219,6 +246,8 @@ export default function ProductEdit() {
             onAddImage={addVariantImage}
             onRemoveImage={removeVariantImage}
             onRemoveVariant={removeVariantRow}
+            onUploadImages={handleUploadVariantImages}
+            upload_loading_map={upload_loading_map}
           />
         </section>
 

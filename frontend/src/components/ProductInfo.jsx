@@ -13,8 +13,7 @@ const StarIcon = () => (
 
 export default function ProductInfo({
   product_data,
-  selected_variant,
-  lowest_price
+  selected_variant
 }) {
   return (
     <section className='space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur sm:p-7'>
@@ -43,7 +42,7 @@ export default function ProductInfo({
       </p>
 
       <PriceDisplay
-        lowest_price={lowest_price}
+        price_value={product_data.price}
         selected_variant={selected_variant}
       />
     </section>

@@ -6,8 +6,15 @@ export const getCategories = () =>
 export const getCategoryById = (id) =>
   prisma.category.findUnique({ where: { category_id: Number(id) } });
 
-export const createCategory = async (name) => {
+const normalizeImageUrl = payload_value => {
+  const single_url = payload_value?.image_url?.trim()
+  return single_url || null
+}
+
+export const createCategory = async payload_value => {
+  const { name } = payload_value || {}
   const trimmed_name = name?.trim();
+  const image_url = normalizeImageUrl(payload_value)
   if (!trimmed_name) {
     const err = new Error("Category name is required");
     err.status = 400;
@@ -15,12 +22,17 @@ export const createCategory = async (name) => {
   }
 
   return prisma.category.create({
-    data: { name: trimmed_name },
+    data: {
+      name: trimmed_name,
+      image_url
+    },
   });
 };
 
-export const updateCategory = async (id, name) => {
+export const updateCategory = async (id, payload_value) => {
+  const { name } = payload_value || {}
   const trimmed_name = name?.trim();
+  const image_url = normalizeImageUrl(payload_value)
   if (!trimmed_name) {
     const err = new Error("Category name is required");
     err.status = 400;
@@ -29,7 +41,10 @@ export const updateCategory = async (id, name) => {
 
   return prisma.category.update({
     where: { category_id: Number(id) },
-    data: { name: trimmed_name },
+    data: {
+      name: trimmed_name,
+      image_url
+    },
   });
 };
 

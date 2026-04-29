@@ -5,6 +5,7 @@ export function useProductForm(initial_data = null) {
   const [form, setForm] = useState({
     name: '',
     description: '',
+    price: '',
     category_id: '',
     brand_id: ''
   })
@@ -38,6 +39,7 @@ export function useProductForm(initial_data = null) {
     setForm({
       name: initial_data.name || '',
       description: initial_data.description || '',
+      price: String(initial_data.price ?? ''),
       category_id: initial_data.category?.category_id || '',
       brand_id: initial_data.brand?.brand_id || ''
     })
@@ -90,7 +92,6 @@ export function useProductForm(initial_data = null) {
         variant_id: variant.variant_id,
         color: variant.color || '',
         sku: variant.sku || '',
-        price: String(variant.price ?? ''),
         stock: Number(variant.stock ?? 0),
         images: variant.images?.length ? variant.images : ['']
       }
@@ -143,6 +144,19 @@ export function useProductForm(initial_data = null) {
     }))
   }, [])
 
+  const appendVariantImages = useCallback((variant_index, image_urls) => {
+    if (!Array.isArray(image_urls) || image_urls.length === 0) return
+
+    setVariants(prev =>
+      prev.map((variant_item, index_value) => {
+        if (index_value !== variant_index) return variant_item
+
+        const old_images = variant_item.images.filter(Boolean)
+        return { ...variant_item, images: [...old_images, ...image_urls] }
+      })
+    )
+  }, [])
+
   const addVariantRow = useCallback(() => {
     setVariants(prev => [
       ...prev,
@@ -150,7 +164,6 @@ export function useProductForm(initial_data = null) {
         variant_id: undefined,
         color: '',
         sku: `SKU-${Date.now()}`,
-        price: '',
         stock: 0,
         images: ['']
       }
@@ -171,7 +184,6 @@ export function useProductForm(initial_data = null) {
       const payload = {
         color: v.color?.trim() || '',
         sku: v.sku,
-        price: Number(v.price),
         stock: Number(v.stock),
         images: v.images.filter(img => img.trim())
       }
@@ -186,6 +198,7 @@ export function useProductForm(initial_data = null) {
     return {
       name: form.name,
       description: form.description,
+      price: Number(form.price),
       category_id: Number(form.category_id),
       brand_id: Number(form.brand_id),
       specs: specs_payload,
@@ -210,6 +223,7 @@ export function useProductForm(initial_data = null) {
     handleVariantImageChange,
     addVariantImage,
     removeVariantImage,
+    appendVariantImages,
     addVariantRow,
     removeVariantRow,
     buildPayload

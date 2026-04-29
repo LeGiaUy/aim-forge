@@ -6,8 +6,14 @@ export const getBrands = () =>
 export const getBrandById = (id) =>
   prisma.brand.findUnique({ where: { brand_id: Number(id) } });
 
-export const createBrand = async ({ name, country }) => {
+const normalizeImageUrl = payload_value => {
+  const single_url = payload_value?.image_url?.trim()
+  return single_url || null
+}
+
+export const createBrand = async ({ name, country, image_url }) => {
   const trimmed_name = name?.trim();
+  const normalized_image_url = normalizeImageUrl({ image_url })
   if (!trimmed_name) {
     const err = new Error("Brand name is required");
     err.status = 400;
@@ -18,12 +24,14 @@ export const createBrand = async ({ name, country }) => {
     data: {
       name: trimmed_name,
       country: country?.trim() || null,
+      image_url: normalized_image_url
     },
   });
 };
 
-export const updateBrand = async (id, { name, country }) => {
+export const updateBrand = async (id, { name, country, image_url }) => {
   const trimmed_name = name?.trim();
+  const normalized_image_url = normalizeImageUrl({ image_url })
   if (!trimmed_name) {
     const err = new Error("Brand name is required");
     err.status = 400;
@@ -35,6 +43,7 @@ export const updateBrand = async (id, { name, country }) => {
     data: {
       name: trimmed_name,
       country: country?.trim() || null,
+      image_url: normalized_image_url
     },
   });
 };

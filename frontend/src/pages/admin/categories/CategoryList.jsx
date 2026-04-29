@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { adminCategoryApi } from '../../../services/adminApi.js'
 
 export default function CategoryList() {
   const [categories, setCategories] = useState([])
-  const [name, setName] = useState('')
+  const [form, setForm] = useState({ name: '', image_url: '' })
   const [editing_id, setEditingId] = useState(null)
-  const [editing_name, setEditingName] = useState('')
+  const [editing_form, setEditingForm] = useState({ name: '', image_url: '' })
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
@@ -27,12 +28,15 @@ export default function CategoryList() {
 
   const handleCreate = async e => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!form.name.trim()) return
 
     try {
       setSubmitting(true)
-      await adminCategoryApi.create({ name: name.trim() })
-      setName('')
+      await adminCategoryApi.create({
+        name: form.name.trim(),
+        image_url: form.image_url
+      })
+      setForm({ name: '', image_url: '' })
       fetchCategories()
     } catch (err) {
       alert(err.message || 'Failed to create category')
@@ -42,13 +46,16 @@ export default function CategoryList() {
   }
 
   const handleUpdate = async category_id => {
-    if (!editing_name.trim()) return
+    if (!editing_form.name.trim()) return
 
     try {
       setSubmitting(true)
-      await adminCategoryApi.update(category_id, { name: editing_name.trim() })
+      await adminCategoryApi.update(category_id, {
+        name: editing_form.name.trim(),
+        image_url: editing_form.image_url
+      })
       setEditingId(null)
-      setEditingName('')
+      setEditingForm({ name: '', image_url: '' })
       fetchCategories()
     } catch (err) {
       alert(err.message || 'Failed to update category')
@@ -71,6 +78,42 @@ export default function CategoryList() {
     }
   }
 
+  const handleUploadCreate = async files => {
+    if (!files.length) return
+
+    const form_data = new FormData()
+    files.forEach(file_item => form_data.append('images', file_item))
+
+    try {
+      setSubmitting(true)
+      const response = await adminCategoryApi.uploadImages(form_data)
+      const image_url = response.data.data?.image_urls?.[0] || ''
+      setForm(prev => ({ ...prev, image_url }))
+    } catch (err) {
+      alert(err.message || 'Failed to upload category image')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleUploadEdit = async files => {
+    if (!files.length) return
+
+    const form_data = new FormData()
+    files.forEach(file_item => form_data.append('images', file_item))
+
+    try {
+      setSubmitting(true)
+      const response = await adminCategoryApi.uploadImages(form_data)
+      const image_url = response.data.data?.image_urls?.[0] || ''
+      setEditingForm(prev => ({ ...prev, image_url }))
+    } catch (err) {
+      alert(err.message || 'Failed to upload category image')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <div className='mx-auto max-w-5xl space-y-6 px-4 py-8'>
       <div>
@@ -80,39 +123,62 @@ export default function CategoryList() {
 
       <section className='admin-card'>
         <h2 className='admin-section-title'>Create category</h2>
-        <form onSubmit={handleCreate} className='flex flex-col gap-3 sm:flex-row'>
+        <form
+          onSubmit={handleCreate}
+          className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]'
+        >
           <input
             type='text'
-            value={name}
-            onChange={e => setName(e.target.value)}
+            value={form.name}
+            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
             placeholder='Category name'
             className='admin-input flex-1'
           />
+          <div className='space-y-2'>
+            <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
+              + Upload logo
+              <input
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={e => {
+                  const files = Array.from(e.target.files || [])
+                  handleUploadCreate(files)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            {form.image_url && (
+              <img src={form.image_url} alt='Category' className='h-10 w-10 rounded object-cover' />
+            )}
+          </div>
           <button type='submit' disabled={submitting} className='admin-btn-primary'>
             Add
           </button>
         </form>
       </section>
 
-      <section className='overflow-hidden rounded-xl border border-white/10'>
-        <table className='w-full text-sm'>
+      <section className='rounded-xl border border-white/10'>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm overflow-visible'>
           <thead className='border-b border-white/10 bg-white/5'>
             <tr>
               <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>ID</th>
               <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Name</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Image</th>
               <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-white/5'>
             {loading ? (
               <tr>
-                <td colSpan={3} className='px-4 py-10 text-center text-[#64748b]'>
+                <td colSpan={4} className='px-4 py-10 text-center text-[#64748b]'>
                   Loading...
                 </td>
               </tr>
             ) : categories.length === 0 ? (
               <tr>
-                <td colSpan={3} className='px-4 py-10 text-center text-[#64748b]'>
+                <td colSpan={4} className='px-4 py-10 text-center text-[#64748b]'>
                   No categories
                 </td>
               </tr>
@@ -124,12 +190,48 @@ export default function CategoryList() {
                     {editing_id === item.category_id ? (
                       <input
                         type='text'
-                        value={editing_name}
-                        onChange={e => setEditingName(e.target.value)}
+                        value={editing_form.name}
+                        onChange={e =>
+                          setEditingForm(prev => ({ ...prev, name: e.target.value }))
+                        }
                         className='admin-input w-full'
                       />
                     ) : (
                       <span className='text-white'>{item.name}</span>
+                    )}
+                  </td>
+                  <td className='px-4 py-3'>
+                    {editing_id === item.category_id ? (
+                      <div className='space-y-2'>
+                        <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
+                          + Upload logo
+                          <input
+                            type='file'
+                            accept='image/*'
+                            className='hidden'
+                            onChange={e => {
+                              const files = Array.from(e.target.files || [])
+                              handleUploadEdit(files)
+                              e.target.value = ''
+                            }}
+                          />
+                        </label>
+                        {editing_form.image_url && (
+                          <img
+                            src={editing_form.image_url}
+                            alt='Category'
+                            className='h-10 w-10 rounded object-cover'
+                          />
+                        )}
+                      </div>
+                    ) : item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className='h-10 w-10 rounded object-cover'
+                      />
+                    ) : (
+                      <span className='text-[#64748b]'>—</span>
                     )}
                   </td>
                   <td className='px-4 py-3'>
@@ -147,7 +249,7 @@ export default function CategoryList() {
                             type='button'
                             onClick={() => {
                               setEditingId(null)
-                              setEditingName('')
+                              setEditingForm({ name: '', image_url: '' })
                             }}
                             className='admin-btn-ghost !px-3 !py-1 text-xs'
                           >
@@ -156,22 +258,32 @@ export default function CategoryList() {
                         </>
                       ) : (
                         <>
+                          <Link
+                            to={`/admin/attributes?category_id=${item.category_id}`}
+                            className='admin-btn-ghost !px-3 !py-1 text-xs'
+                          >
+                            Thuộc tính
+                          </Link>
+
                           <button
                             type='button'
                             onClick={() => {
                               setEditingId(item.category_id)
-                              setEditingName(item.name)
+                              setEditingForm({
+                                name: item.name || '',
+                                image_url: item.image_url || ''
+                              })
                             }}
                             className='admin-btn-ghost !px-3 !py-1 text-xs'
                           >
-                            Edit
+                            Sửa
                           </button>
                           <button
                             type='button'
                             onClick={() => handleDelete(item.category_id)}
                             className='rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 transition hover:bg-red-500/10'
                           >
-                            Delete
+                            Xóa
                           </button>
                         </>
                       )}
@@ -181,7 +293,8 @@ export default function CategoryList() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </section>
     </div>
   )

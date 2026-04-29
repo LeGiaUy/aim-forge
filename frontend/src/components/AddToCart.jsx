@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import api from '../services/api.js'
+import { useMemo, useState } from 'react'
+import { useCart } from '../context/CartContext.jsx'
 
 const PlusIcon = () => (
   <svg
@@ -52,6 +52,7 @@ const getStockState = stock_value => {
 }
 
 export default function AddToCart({ selected_variant }) {
+  const { addToCart } = useCart()
   const [quantity_value, setQuantityValue] = useState(1)
   const [toast_state, setToastState] = useState({
     message: '',
@@ -64,10 +65,6 @@ export default function AddToCart({ selected_variant }) {
   }, [selected_variant])
 
   const disable_add_button = !selected_variant || selected_variant.stock <= 0
-
-  useEffect(() => {
-    setQuantityValue(1)
-  }, [selected_variant?.variant_id])
 
   const showToast = (message_value, type_value) => {
     setToastState({ message: message_value, type: type_value })
@@ -90,7 +87,7 @@ export default function AddToCart({ selected_variant }) {
 
     setLoadingState(true)
     try {
-      await api.post('/cart/add', {
+      await addToCart({
         variant_id: selected_variant.variant_id,
         quantity: quantity_value
       })

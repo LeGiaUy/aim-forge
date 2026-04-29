@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   adminAttributeApi,
   adminCategoryApi
 } from '../../../services/adminApi.js'
 
 export default function AttributeList() {
+  const [search_params] = useSearchParams()
+  const initial_category_id = search_params.get('category_id') || ''
   const [categories, setCategories] = useState([])
-  const [selected_category_id, setSelectedCategoryId] = useState('')
+  const [selected_category_id, setSelectedCategoryId] = useState(
+    String(initial_category_id)
+  )
   const [attributes, setAttributes] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [new_attribute_name, setNewAttributeName] = useState('')
+  const [new_attribute_names, setNewAttributeNames] = useState('')
 
   const [editing_attribute_id, setEditingAttributeId] = useState(null)
   const [editing_attribute_name, setEditingAttributeName] = useState('')
@@ -25,7 +31,7 @@ export default function AttributeList() {
       const res = await adminCategoryApi.getAll()
       const category_items = res.data.data || []
       setCategories(category_items)
-      if (category_items.length > 0 && !selected_category_id) {
+      if (!selected_category_id && category_items.length > 0) {
         setSelectedCategoryId(String(category_items[0].category_id))
       }
     } catch {
@@ -73,6 +79,32 @@ export default function AttributeList() {
       fetchAttributes(selected_category_id)
     } catch (err) {
       alert(err.message || 'Failed to create attribute')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleCreateAttributesBatch = async e => {
+    e.preventDefault()
+    if (!selected_category_id || !new_attribute_names.trim()) return
+
+    const names = new_attribute_names
+      .split(/[\n,]+/)
+      .map(name_value => name_value.trim())
+      .filter(Boolean)
+
+    if (names.length === 0) return
+
+    try {
+      setSubmitting(true)
+      await adminAttributeApi.create({
+        names,
+        category_id: Number(selected_category_id)
+      })
+      setNewAttributeNames('')
+      fetchAttributes(selected_category_id)
+    } catch (err) {
+      alert(err.message || 'Failed to create attributes')
     } finally {
       setSubmitting(false)
     }
@@ -155,6 +187,23 @@ export default function AttributeList() {
             className='admin-btn-primary'
           >
             Add attribute
+          </button>
+        </form>
+
+        <form onSubmit={handleCreateAttributesBatch} className='space-y-3'>
+          <textarea
+            value={new_attribute_names}
+            onChange={e => setNewAttributeNames(e.target.value)}
+            placeholder='Add multiple attributes, one per line or separated by commas'
+            rows={4}
+            className='admin-input w-full resize-y'
+          />
+          <button
+            type='submit'
+            disabled={!selected_category_id || submitting}
+            className='admin-btn-primary'
+          >
+            Add multiple attributes
           </button>
         </form>
       </section>

@@ -70,15 +70,17 @@ model RolePermission {
 model Category {
   category_id Int    @id @default(autoincrement())
   name        String
+  image_url   String?
 
   products   Product[]
   attributes Attribute[]
 }
 
 model Brand {
-  brand_id Int     @id @default(autoincrement())
-  name     String
-  country  String?
+  brand_id  Int     @id @default(autoincrement())
+  name      String
+  country   String?
+  image_url String?
 
   products Product[]
 }
@@ -87,6 +89,7 @@ model Product {
   product_id  Int     @id @default(autoincrement())
   name        String
   description String?
+  price       Decimal @default(0)
 
   category_id Int?
   brand_id    Int?

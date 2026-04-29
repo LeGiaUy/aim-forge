@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useCart } from '../context/CartContext.jsx'
 
 // Crosshair SVG icon
 const CrosshairIcon = () => (
@@ -33,6 +34,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const { user, is_authenticated, logout } = useAuth()
+  const { total_items } = useCart()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -40,7 +42,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => setMenuOpen(false), [location])
+  const closeMenu = () => setMenuOpen(false)
 
   return (
     <header
@@ -52,7 +54,12 @@ export default function Navbar() {
     >
       <nav className='mx-auto flex max-w-7xl items-center justify-between px-6'>
         {/* Logo */}
-        <Link to='/' className='group flex items-center gap-3' aria-label='AimForge Home'>
+        <Link
+          to='/'
+          className='group flex items-center gap-3'
+          aria-label='AimForge Home'
+          onClick={closeMenu}
+        >
           <div className='transition-all duration-300 group-hover:animate-glowPulse'>
             <CrosshairIcon />
           </div>
@@ -67,6 +74,7 @@ export default function Navbar() {
             <li key={link.to}>
               <Link
                 to={link.to}
+                onClick={closeMenu}
                 className={`font-body text-sm font-medium uppercase tracking-wider transition-colors duration-200 hover:text-[#9f67ff] ${
                   location.pathname === link.to
                     ? 'text-[#7c3aed]'
@@ -81,15 +89,16 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className='hidden items-center gap-4 md:flex'>
-          <button
+          <Link
+            to='/cart'
             aria-label='Cart'
             className='relative cursor-pointer text-[#94a3b8] transition-colors hover:text-[#06b6d4]'
           >
             <CartIcon />
             <span className='absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#7c3aed] text-[9px] font-bold text-white'>
-              0
+              {total_items}
             </span>
-          </button>
+          </Link>
 
           {!is_authenticated && (
             <Link to='/login' className='btn-primary px-5 py-2 text-xs'>
@@ -152,8 +161,19 @@ export default function Navbar() {
             </Link>
           ))}
           <div className='flex gap-3 border-t border-[#1e1e2e] pt-4'>
+            <Link
+              to='/cart'
+              onClick={closeMenu}
+              className='w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#cbd5e1]'
+            >
+              Cart ({total_items})
+            </Link>
             {!is_authenticated && (
-              <Link to='/login' className='btn-primary w-full justify-center px-5 py-2.5 text-xs'>
+              <Link
+                to='/login'
+                onClick={closeMenu}
+                className='btn-primary w-full justify-center px-5 py-2.5 text-xs'
+              >
                 Sign In
               </Link>
             )}
@@ -161,6 +181,7 @@ export default function Navbar() {
               <>
                 <Link
                   to='/profile'
+                  onClick={closeMenu}
                   className='w-full rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#d8b4fe]'
                 >
                   Profile

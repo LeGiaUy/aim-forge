@@ -48,6 +48,40 @@ export const createAttribute = async ({ name, category_id }) => {
   });
 };
 
+export const createAttributesBatch = async ({ names, category_id }) => {
+  if (!category_id) {
+    const err = new Error("Category is required");
+    err.status = 400;
+    throw err;
+  }
+
+  const normalized_names = Array.isArray(names)
+    ? names
+        .map(name_value => String(name_value || "").trim())
+        .filter(Boolean)
+    : [];
+
+  if (normalized_names.length === 0) {
+    const err = new Error("At least one attribute name is required");
+    err.status = 400;
+    throw err;
+  }
+
+  const created_attributes = [];
+  for (const attribute_name of normalized_names) {
+    const created = await prisma.attribute.create({
+      data: {
+        name: attribute_name,
+        category_id: Number(category_id),
+      },
+      include: { values: true },
+    });
+    created_attributes.push(created);
+  }
+
+  return created_attributes;
+};
+
 export const updateAttribute = async (id, { name }) => {
   const trimmed_name = name?.trim();
   if (!trimmed_name) {

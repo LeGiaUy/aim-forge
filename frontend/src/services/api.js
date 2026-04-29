@@ -35,6 +35,23 @@ export const productApi = {
   }
 }
 
+export const cartApi = {
+  getCart() {
+    return api.get('/cart')
+  },
+  addItem(payload) {
+    return api.post('/cart/add', payload)
+  },
+  updateItem(payload) {
+    return api.put('/cart/update', payload)
+  },
+  removeItem(variant_id) {
+    return api.delete('/cart/remove', {
+      data: { variant_id }
+    })
+  }
+}
+
 export const authApi = {
   login(payload) {
     return api.post('/auth/login', payload)

@@ -5,7 +5,6 @@ const variantSchema = z.object({
   variant_id: z.number().int().optional(),
   color: z.string().min(1, "Color is required"),
   sku: z.string().optional(),
-  price: z.number(),
   stock: z.number().int(),
   images: z.array(z.string()).optional() // array of image urls
 });
@@ -13,6 +12,7 @@ const variantSchema = z.object({
 const productCreateSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  price: z.number().nonnegative(),
   category_id: z.number().int(),
   brand_id: z.number().int(),
   specs: z.array(z.object({
@@ -25,6 +25,7 @@ const productCreateSchema = z.object({
 const productUpdateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
+  price: z.number().nonnegative().optional(),
   category_id: z.number().int().optional(),
   brand_id: z.number().int().optional(),
   specs: z.array(z.object({
@@ -49,7 +50,7 @@ const variantInclude = {
 };
 
 // Build where clause from query filters
-const buildWhere = ({ category_id, brand_id, min_price, max_price, search }) => {
+const buildWhere = ({ category_id, brand_id, search }) => {
   const where = { is_active: true };
 
   if (category_id) where.category_id = Number(category_id);
@@ -59,18 +60,6 @@ const buildWhere = ({ category_id, brand_id, min_price, max_price, search }) => 
     where.name = { contains: search, mode: "insensitive" };
   }
 
-  if (min_price || max_price) {
-    where.variants = {
-      some: {
-        is_active: true,
-        price: {
-          ...(min_price ? { gte: Number(min_price) } : {}),
-          ...(max_price ? { lte: Number(max_price) } : {}),
-        },
-      },
-    };
-  }
-
   return where;
 };
 
@@ -78,12 +67,7 @@ const buildWhere = ({ category_id, brand_id, min_price, max_price, search }) => 
 const formatProductList = (product) => {
   const activeVariants = (product.variants || []).filter(v => v.is_active);
 
-  // Pick lowest-price variant as representative
-  const sortedVariants = [...activeVariants].sort(
-    (a, b) => Number(a.price) - Number(b.price)
-  );
-  const representative = sortedVariants[0] || null;
-  const max_price = sortedVariants.length > 0 ? Number(sortedVariants[sortedVariants.length - 1].price) : null;
+  const representative = activeVariants[0] || null;
   const total_stock = activeVariants.reduce((sum, v) => sum + v.stock, 0);
 
   const mainImage =
@@ -99,14 +83,12 @@ const formatProductList = (product) => {
     category: product.category
       ? { category_id: product.category.category_id, name: product.category.name }
       : null,
-    min_price: representative ? Number(representative.price) : null,
-    max_price,
+    price: Number(product.price),
     total_stock,
     representative_variant: representative
       ? {
           variant_id: representative.variant_id,
           sku: representative.sku,
-          price: Number(representative.price),
           stock: representative.stock,
           main_image: mainImage
             ? { image_url: mainImage.image_url, is_main: mainImage.is_main }
@@ -191,7 +173,7 @@ export const getProductById = async (id) => {
       variants: {
         where: { is_active: true },
         include: variantInclude,
-        orderBy: { price: "asc" },
+        orderBy: { variant_id: "asc" },
       },
     },
   });
@@ -206,6 +188,7 @@ export const getProductById = async (id) => {
     product_id: product.product_id,
     name: product.name,
     description: product.description,
+    price: Number(product.price),
     category_id: product.category_id,
     brand_id: product.brand_id,
     brand: product.brand,
@@ -219,7 +202,6 @@ export const getProductById = async (id) => {
       variant_id: v.variant_id,
       color: v.color,
       sku: v.sku,
-      price: Number(v.price),
       stock: v.stock,
       images: v.images.map(img => img.image_url),
       attributes: v.color
@@ -252,7 +234,7 @@ export const createProduct = async (body) => {
     throw err;
   }
 
-  const { name, description, category_id, brand_id, specs, variants } = parsed.data;
+  const { name, description, price, category_id, brand_id, specs, variants } = parsed.data;
 
   await validateProductAttributes(category_id, specs);
 
@@ -261,6 +243,7 @@ export const createProduct = async (body) => {
     data: {
       name,
       description,
+      price,
       category_id,
       brand_id,
       is_active: true,
@@ -276,7 +259,7 @@ export const createProduct = async (body) => {
         create: variants.map(v => ({
             color: v.color,
           sku: v.sku,
-          price: v.price,
+          price,
           stock: v.stock,
           is_active: true,
           images: v.images?.length ? {
@@ -306,7 +289,7 @@ export const updateProduct = async (id, body) => {
     throw err;
   }
 
-  const { name, description, category_id, brand_id, specs, variants } = parsed.data;
+  const { name, description, price, category_id, brand_id, specs, variants } = parsed.data;
   const product_id = Number(id)
 
   const existing = await prisma.product.findUnique({ where: { product_id } });
@@ -326,7 +309,15 @@ export const updateProduct = async (id, body) => {
     const dataToUpdate = {};
     if (name !== undefined) dataToUpdate.name = name;
     if (description !== undefined) dataToUpdate.description = description;
+    if (price !== undefined) dataToUpdate.price = price;
     if (category_id !== undefined) dataToUpdate.category_id = category_id;
+    if (price !== undefined) {
+      await tx.productVariant.updateMany({
+        where: { product_id },
+        data: { price }
+      });
+    }
+
     if (brand_id !== undefined) dataToUpdate.brand_id = brand_id;
 
     if (Object.keys(dataToUpdate).length > 0) {
@@ -396,7 +387,7 @@ export const updateProduct = async (id, body) => {
               data: {
                 color: v.color,
                 sku: v.sku,
-                price: v.price,
+                price: price ?? existing.price,
                 stock: v.stock,
                 is_active: true,
                 images: v.images?.length ? {
@@ -417,7 +408,7 @@ export const updateProduct = async (id, body) => {
                 product_id,
                 color: v.color,
                 sku: v.sku,
-                price: v.price,
+                price: price ?? existing.price,
                 stock: v.stock,
                 is_active: true,
                 images: v.images?.length ? {

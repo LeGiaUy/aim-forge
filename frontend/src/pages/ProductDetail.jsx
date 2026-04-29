@@ -45,7 +45,6 @@ export default function ProductDetail() {
     selected_image,
     loading_state,
     error_message,
-    lowest_price,
     setSelectedVariant,
     setSelectedImage
   } = useProductDetail(id)
@@ -79,7 +78,6 @@ export default function ProductDetail() {
                 <ProductInfo
                   product_data={product_data}
                   selected_variant={selected_variant}
-                  lowest_price={lowest_price}
                 />
 
                 <VariantSelector
@@ -88,7 +86,10 @@ export default function ProductDetail() {
                   onVariantChange={setSelectedVariant}
                 />
 
-                <AddToCart selected_variant={selected_variant} />
+                <AddToCart
+                  key={selected_variant?.variant_id || 'cart-default'}
+                  selected_variant={selected_variant}
+                />
               </div>
             </section>
 

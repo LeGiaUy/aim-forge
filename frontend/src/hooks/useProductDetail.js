@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api from '../services/api.js'
 
 const getDefaultVariant = variants => {
@@ -25,7 +25,6 @@ const normalizeProduct = raw_product => {
       })
     ),
     color: variant_item.color || '',
-    price: Number(variant_item.price),
     stock: Number(variant_item.stock)
   }))
 
@@ -95,14 +94,6 @@ export const useProductDetail = product_id => {
     setSelectedImage(next_image)
   }, [selected_variant])
 
-  const lowest_price = useMemo(() => {
-    if (!product_data?.variants?.length) return null
-
-    return product_data.variants.reduce((current_min, current_item) => {
-      return current_item.price < current_min ? current_item.price : current_min
-    }, product_data.variants[0].price)
-  }, [product_data])
-
   return {
     product_data,
     related_products,
@@ -110,7 +101,6 @@ export const useProductDetail = product_id => {
     selected_image,
     loading_state,
     error_message,
-    lowest_price,
     setSelectedVariant,
     setSelectedImage,
     refetch_product: fetchProductDetail
