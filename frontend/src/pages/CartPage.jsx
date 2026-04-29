@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
+import { orderApi, paymentApi } from '../services/api.js'
 import { formatVnd } from '../utils/currency.js'
+import { useState } from 'react'
 
 function CartItemRow({
   item_data,
@@ -70,12 +73,17 @@ function CartItemRow({
 }
 
 export default function CartPage() {
+  const navigate = useNavigate()
   const {
     cart_data,
     cart_loading,
     updateCartItem,
     removeCartItem
   } = useCart()
+  const [address_text, setAddressText] = useState('')
+  const [payment_method, setPaymentMethod] = useState('VNPAY')
+  const [submit_loading, setSubmitLoading] = useState(false)
+  const [error_message, setErrorMessage] = useState('')
 
   const handleIncrease = async item_data => {
     await updateCartItem({
@@ -98,6 +106,50 @@ export default function CartPage() {
 
   const handleRemove = async item_data => {
     await removeCartItem(item_data.variant_id)
+  }
+
+  const handleCheckout = async () => {
+    if (!address_text.trim()) {
+      setErrorMessage('Please enter shipping address')
+      return
+    }
+
+    setErrorMessage('')
+    setSubmitLoading(true)
+
+    try {
+      const order_response = await orderApi.createOrder({
+        address: address_text.trim()
+      })
+      const order_data = order_response.data?.data
+
+      if (!order_data?.order_id) {
+        throw new Error('Cannot create order')
+      }
+
+      if (payment_method === 'COD') {
+        await paymentApi.createCod({
+          orderId: order_data.order_id
+        })
+        navigate('/profile')
+        return
+      }
+
+      const payment_response = await paymentApi.createVnpay({
+        orderId: order_data.order_id
+      })
+      const payment_url = payment_response.data?.data?.payment_url
+
+      if (!payment_url) {
+        throw new Error('Cannot create VNPAY url')
+      }
+
+      window.location.href = payment_url
+    } catch (error) {
+      setErrorMessage(error.message || 'Checkout failed')
+    } finally {
+      setSubmitLoading(false)
+    }
   }
 
   return (
@@ -147,11 +199,57 @@ export default function CartPage() {
               <span>Total</span>
               <span>{formatVnd(cart_data.total)}</span>
             </div>
+            <label className='mt-4 block'>
+              <span className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
+                Shipping Address
+              </span>
+              <textarea
+                value={address_text}
+                onChange={event => setAddressText(event.target.value)}
+                rows={3}
+                placeholder='Enter your address'
+                className='mt-2 w-full rounded-xl border border-white/15 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none ring-[#7c3aed] transition placeholder:text-[#64748b] focus:ring-2'
+              />
+            </label>
+            <fieldset className='mt-4'>
+              <legend className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
+                Payment Method
+              </legend>
+              <div className='mt-2 space-y-2'>
+                <label className='flex cursor-pointer items-center gap-2 text-sm text-[#cbd5e1]'>
+                  <input
+                    type='radio'
+                    name='payment_method'
+                    value='VNPAY'
+                    checked={payment_method === 'VNPAY'}
+                    onChange={event => setPaymentMethod(event.target.value)}
+                  />
+                  <span>VNPAY</span>
+                </label>
+                <label className='flex cursor-pointer items-center gap-2 text-sm text-[#cbd5e1]'>
+                  <input
+                    type='radio'
+                    name='payment_method'
+                    value='COD'
+                    checked={payment_method === 'COD'}
+                    onChange={event => setPaymentMethod(event.target.value)}
+                  />
+                  <span>Cash on Delivery</span>
+                </label>
+              </div>
+            </fieldset>
+            {error_message && (
+              <p className='mt-3 text-xs font-semibold text-red-300'>
+                {error_message}
+              </p>
+            )}
             <button
               type='button'
+              onClick={handleCheckout}
+              disabled={cart_loading || submit_loading}
               className='mt-4 w-full rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:brightness-110'
             >
-              Checkout
+              {submit_loading ? 'Processing...' : 'Checkout'}
             </button>
           </aside>
         </section>

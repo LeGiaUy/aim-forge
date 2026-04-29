@@ -42,7 +42,7 @@ export const createOrder = async (userId, body) => {
     const newOrder = await tx.order.create({
       data: {
         user_id: userId,
-        status: "pending",
+        status: "PENDING",
         total,
         address,
         items: {
@@ -67,7 +67,7 @@ export const createOrder = async (userId, body) => {
     status: order.status,
     total: Number(order.total),
     address: order.address,
-    order_date: order.order_date,
+    created_at: order.created_at,
     items: order.items.map((i) => ({
       variant_id: i.variant_id,
       quantity: i.quantity,
@@ -92,7 +92,7 @@ export const getOrders = async (userId) => {
       },
       payments: true,
     },
-    orderBy: { order_date: "desc" },
+    orderBy: { created_at: "desc" },
   });
 
   return orders.map((o) => ({
@@ -100,8 +100,8 @@ export const getOrders = async (userId) => {
     status: o.status,
     total: Number(o.total),
     address: o.address,
-    order_date: o.order_date,
-    payment_status: o.payments[0]?.status || "unpaid",
+    created_at: o.created_at,
+    payment_status: o.payments[0]?.status || "PENDING",
     items: o.items.map((i) => ({
       variant_id: i.variant_id,
       product_name: i.variant.product.name,
@@ -144,7 +144,7 @@ export const getOrderById = async (userId, orderId) => {
     status: order.status,
     total: Number(order.total),
     address: order.address,
-    order_date: order.order_date,
+    created_at: order.created_at,
     payments: order.payments,
     items: order.items.map((i) => ({
       variant_id: i.variant_id,

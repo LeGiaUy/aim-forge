@@ -12,6 +12,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentMethod {
+  COD
+  VNPAY
+}
+
 //////////////////////
 // USER & RBAC
 //////////////////////
@@ -216,10 +235,11 @@ model Order {
   order_id Int @id @default(autoincrement())
   user_id  Int
 
-  order_date DateTime @default(now())
-  status     String
+  created_at DateTime    @default(now())
+  status     OrderStatus @default(PENDING)
   total      Decimal
   address    String
+  is_paid    Boolean     @default(false)
 
   user     User        @relation(fields: [user_id], references: [user_id])
   items    OrderItem[]
@@ -247,9 +267,17 @@ model Payment {
   payment_id Int @id @default(autoincrement())
   order_id   Int
 
-  method  String
-  status  String
-  paid_at DateTime?
+  method         PaymentMethod
+  status         PaymentStatus @default(PENDING)
+  amount         Decimal
+  currency       String        @default("VND")
+  transaction_id String?
+  response_code  String?
+  paid_at        DateTime?
+  created_at     DateTime      @default(now())
 
   order Order @relation(fields: [order_id], references: [order_id])
+
+  @@index([transaction_id])
+  @@unique([order_id, method])
 }

@@ -64,4 +64,28 @@ export const authApi = {
   }
 }
 
+export const orderApi = {
+  createOrder(payload) {
+    return api.post('/orders/create', payload)
+  },
+  getOrders() {
+    return api.get('/orders')
+  },
+  getOrderById(order_id) {
+    return api.get(`/orders/${order_id}`)
+  }
+}
+
+export const paymentApi = {
+  createVnpay(payload) {
+    return api.post('/payments/create-vnpay', payload)
+  },
+  createCod(payload) {
+    return api.post('/payments/create-cod', payload)
+  },
+  getVnpayReturn(params) {
+    return api.get('/payments/vnpay-return', { params })
+  }
+}
+
 export default api

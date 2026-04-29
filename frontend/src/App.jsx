@@ -6,8 +6,10 @@ import Home from './pages/Home.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
+import OrderDetailPage from './pages/OrderDetailPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import CartPage from './pages/CartPage.jsx'
+import PaymentReturnPage from './pages/PaymentReturnPage.jsx'
 import AdminLayout from './pages/admin/AdminLayout.jsx'
 import AttributeList from './pages/admin/attributes/AttributeList.jsx'
 import BrandList from './pages/admin/brands/BrandList.jsx'
@@ -31,6 +33,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
+          <Route path='/payment-return' element={<PaymentReturnPage />} />
           <Route
             path='/cart'
             element={
@@ -44,6 +47,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/profile/orders/:id'
+            element={
+              <PrivateRoute>
+                <OrderDetailPage />
               </PrivateRoute>
             }
           />

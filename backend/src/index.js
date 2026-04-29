@@ -11,7 +11,7 @@ import categoryRoutes from "./routes/categories.js";
 import brandRoutes from "./routes/brands.js";
 import cartRoutes from "./routes/cart.js";
 import orderRoutes from "./routes/orders.js";
-import paymentRoutes from "./routes/payments.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import attributeRoutes from "./routes/attributes.js";
 import uploadRoutes from "./routes/uploads.js";
 
