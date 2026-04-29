@@ -88,3 +88,17 @@ export const adminBrandApi = {
     })
   }
 }
+
+export const adminOrderApi = {
+  getOrders(params = {}) {
+    return api.get('/admin/orders', { params })
+  },
+  getById(order_id) {
+    return api.get(`/admin/orders/${order_id}`)
+  },
+  updateStatus(order_id, new_status) {
+    return api.patch(`/admin/orders/${order_id}/status`, {
+      newStatus: new_status
+    })
+  }
+}

@@ -12,6 +12,7 @@ import brandRoutes from "./routes/brands.js";
 import cartRoutes from "./routes/cart.js";
 import orderRoutes from "./routes/orders.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import adminOrderRoutes from "./routes/adminOrder.routes.js";
 import attributeRoutes from "./routes/attributes.js";
 import uploadRoutes from "./routes/uploads.js";
 
@@ -32,6 +33,7 @@ app.use("/api/brands", brandRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/attributes", attributeRoutes);
 app.use("/api/uploads", uploadRoutes);
 

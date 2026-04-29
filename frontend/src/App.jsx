@@ -14,6 +14,8 @@ import AdminLayout from './pages/admin/AdminLayout.jsx'
 import AttributeList from './pages/admin/attributes/AttributeList.jsx'
 import BrandList from './pages/admin/brands/BrandList.jsx'
 import CategoryList from './pages/admin/categories/CategoryList.jsx'
+import OrderDetail from './pages/admin/orders/OrderDetail.jsx'
+import OrderList from './pages/admin/orders/OrderList.jsx'
 import ProductList from './pages/admin/products/ProductList.jsx'
 import ProductCreate from './pages/admin/products/ProductCreate.jsx'
 import ProductEdit from './pages/admin/products/ProductEdit.jsx'
@@ -62,6 +64,8 @@ function App() {
           {/* ─── Admin Routes ─── */}
           <Route path='/admin' element={<AdminLayout />}>
             <Route path='products' element={<ProductList />} />
+            <Route path='orders' element={<OrderList />} />
+            <Route path='orders/:id' element={<OrderDetail />} />
             <Route path='products/create' element={<ProductCreate />} />
             <Route path='products/edit/:id' element={<ProductEdit />} />
             <Route path='categories' element={<CategoryList />} />
