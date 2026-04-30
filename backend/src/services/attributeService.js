@@ -101,23 +101,11 @@ export const updateAttribute = async (id, { name }) => {
 
 export const deleteAttribute = async (id) => {
   const attribute_id = Number(id);
-  const [spec_usages, values] = await Promise.all([
-    prisma.productAttributeValue.count({ where: { attribute_id } }),
-    prisma.attributeValue.findMany({
-      where: { attribute_id },
-      select: { value_id: true },
-    }),
-  ]);
+  const spec_usages = await prisma.productAttributeValue.count({
+    where: { attribute_id }
+  });
 
-  const value_ids = values.map((item) => item.value_id);
-  const variant_usages =
-    value_ids.length > 0
-      ? await prisma.variantAttributeValue.count({
-          where: { value_id: { in: value_ids } },
-        })
-      : 0;
-
-  if (spec_usages > 0 || variant_usages > 0) {
+  if (spec_usages > 0) {
     const err = new Error("Cannot delete attribute that is already used");
     err.status = 400;
     throw err;

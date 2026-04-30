@@ -41,10 +41,7 @@ const getLatestPayment = order_data => {
 
 const getAllowedTransitions = (current_status, payment_method) => {
   if (current_status === 'PENDING') {
-    if (payment_method === 'COD') {
-      return ['PROCESSING', 'CANCELLED']
-    }
-    return ['CANCELLED']
+    return ['PROCESSING', 'CANCELLED']
   }
 
   if (current_status === 'PAID') {

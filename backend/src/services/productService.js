@@ -47,13 +47,6 @@ const variantInclude = {
   images: {
     orderBy: { sort_order: "asc" },
   },
-  attributes: {
-    include: {
-      value: {
-        include: { attribute: true },
-      },
-    },
-  },
 };
 
 // Build where clause from query filters
@@ -246,22 +239,12 @@ export const getProductById = async (id) => {
         images: v.images.map(img => img.image_url),
         attributes: v.color
           ? [{ attribute: "Color", value: v.color }]
-          : v.attributes.map((va) => ({
-              attribute_id: va.value.attribute.attribute_id,
-              attribute: va.value.attribute.name,
-              value_id: va.value.value_id,
-              value: va.value.value,
-            })),
+          : [],
         // Detailed arrays for UI display
         images_detail: v.images,
         attributes_detail: v.color
           ? [{ attribute_id: null, value_id: null, attribute: "Color", value: v.color }]
-          : v.attributes.map((va) => ({
-              attribute_id: va.value.attribute.attribute_id,
-              value_id: va.value.value_id,
-              attribute: va.value.attribute.name,
-              value: va.value.value,
-            })),
+          : [],
       };
     }),
   };
@@ -440,7 +423,6 @@ export const updateProduct = async (id, body) => {
         for (const v of variants) {
           if (v.variant_id && existingIds.includes(v.variant_id)) {
             // Update existing variant
-            await tx.variantAttributeValue.deleteMany({ where: { variant_id: v.variant_id } });
             await tx.variantImage.deleteMany({ where: { variant_id: v.variant_id } });
 
             const variant_update_data = {

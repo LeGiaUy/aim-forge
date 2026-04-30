@@ -146,7 +146,6 @@ model ProductVariant {
 
   product Product @relation(fields: [product_id], references: [product_id])
 
-  attributes  VariantAttributeValue[]
   images      VariantImage[]
   cart_items  CartItem[]
   order_items OrderItem[]
@@ -173,18 +172,6 @@ model AttributeValue {
   value        String
 
   attribute Attribute @relation(fields: [attribute_id], references: [attribute_id])
-
-  variants VariantAttributeValue[]
-}
-
-model VariantAttributeValue {
-  variant_id Int
-  value_id   Int
-
-  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
-  value   AttributeValue @relation(fields: [value_id], references: [value_id])
-
-  @@id([variant_id, value_id])
 }
 
 model ProductAttributeValue {

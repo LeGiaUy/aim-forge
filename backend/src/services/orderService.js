@@ -134,9 +134,6 @@ export const getOrderById = async (userId, orderId) => {
             include: {
               product: { include: { brand: true } },
               images: { where: { is_main: true }, take: 1 },
-              attributes: {
-                include: { value: { include: { attribute: true } } },
-              },
             },
           },
         },
@@ -163,10 +160,9 @@ export const getOrderById = async (userId, orderId) => {
       product_name: i.variant.product.name,
       brand: i.variant.product.brand?.name || null,
       image: i.variant.images[0]?.image_url || null,
-      attributes: i.variant.attributes.map((va) => ({
-        attribute: va.value.attribute.name,
-        value: va.value.value,
-      })),
+      attributes: i.variant.color
+        ? [{ attribute: "Color", value: i.variant.color }]
+        : [],
       quantity: i.quantity,
       price: Number(i.price),
       subtotal: Number(i.price) * i.quantity,
