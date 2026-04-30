@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { AdminToastProvider } from '../../components/admin/AdminUi.jsx'
 
 const NAV_ITEMS = [
+  { label: 'Dashboard', path: '/admin/dashboard' },
   { label: 'Products', path: '/admin/products' },
   { label: 'Orders', path: '/admin/orders' },
   { label: 'Categories', path: '/admin/categories' },
@@ -19,7 +20,7 @@ export default function AdminLayout() {
         <header className='sticky top-0 z-50 border-b border-white/10 bg-[#0d0d1a]/90 backdrop-blur-md'>
           <div className='mx-auto flex max-w-7xl items-center justify-between px-4 py-3'>
             <div className='flex items-center gap-6'>
-              <Link to='/admin/products' className='flex items-center gap-2'>
+              <Link to='/admin/dashboard' className='flex items-center gap-2'>
                 <span className='text-lg font-bold tracking-tight'>
                   <span className='text-[#9f67ff]'>Aim</span>
                   <span className='text-white'>Forge</span>

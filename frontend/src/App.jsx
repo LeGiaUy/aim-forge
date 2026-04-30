@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Footer from './components/Footer.jsx'
 import Navbar from './components/Navbar.jsx'
 import PrivateRoute from './components/PrivateRoute.jsx'
@@ -19,6 +19,7 @@ import OrderList from './pages/admin/orders/OrderList.jsx'
 import ProductList from './pages/admin/products/ProductList.jsx'
 import ProductCreate from './pages/admin/products/ProductCreate.jsx'
 import ProductEdit from './pages/admin/products/ProductEdit.jsx'
+import DashboardPage from './pages/admin/dashboard/DashboardPage.jsx'
 
 function App() {
   const location = useLocation()
@@ -63,6 +64,8 @@ function App() {
 
           {/* ─── Admin Routes ─── */}
           <Route path='/admin' element={<AdminLayout />}>
+            <Route index element={<Navigate to='dashboard' replace />} />
+            <Route path='dashboard' element={<DashboardPage />} />
             <Route path='products' element={<ProductList />} />
             <Route path='orders' element={<OrderList />} />
             <Route path='orders/:id' element={<OrderDetail />} />

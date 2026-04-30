@@ -102,3 +102,24 @@ export const adminOrderApi = {
     })
   }
 }
+
+export const adminStatsApi = {
+  getKpi(params = {}) {
+    return api.get('/admin/stats/kpi', { params })
+  },
+  getRevenueChart(params = {}) {
+    return api.get('/admin/stats/revenue-chart', { params })
+  },
+  getOrderStatus(params = {}) {
+    return api.get('/admin/stats/order-status', { params })
+  },
+  getTopProducts(params = {}) {
+    return api.get('/admin/stats/top-products', { params })
+  },
+  getPaymentMethod(params = {}) {
+    return api.get('/admin/stats/payment-method', { params })
+  },
+  getFunnel(params = {}) {
+    return api.get('/admin/stats/funnel', { params })
+  }
+}
