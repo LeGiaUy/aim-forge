@@ -1,179 +1,303 @@
-import { useAuth } from '../context/AuthContext.jsx'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { orderApi } from '../services/api.js'
-import { formatVnd } from '../utils/currency.js'
-
-const ORDER_STATUS_CLASS = {
-  PENDING: 'text-amber-300 border-amber-300/30 bg-amber-500/10',
-  PAID: 'text-emerald-300 border-emerald-300/30 bg-emerald-500/10',
-  FAILED: 'text-red-300 border-red-300/30 bg-red-500/10',
-  CANCELLED: 'text-zinc-300 border-zinc-300/30 bg-zinc-500/10',
-  COMPLETED: 'text-sky-300 border-sky-300/30 bg-sky-500/10'
-}
-
-const PAYMENT_STATUS_CLASS = {
-  PENDING: 'text-amber-300 border-amber-300/30 bg-amber-500/10',
-  SUCCESS: 'text-emerald-300 border-emerald-300/30 bg-emerald-500/10',
-  FAILED: 'text-red-300 border-red-300/30 bg-red-500/10'
-}
-
-function StatusBadge({ label_text, status_value, type_value }) {
-  const class_name =
-    type_value === 'payment'
-      ? PAYMENT_STATUS_CLASS[status_value] ||
-        'text-zinc-300 border-zinc-300/30 bg-zinc-500/10'
-      : ORDER_STATUS_CLASS[status_value] ||
-        'text-zinc-300 border-zinc-300/30 bg-zinc-500/10'
-
-  return (
-    <span
-      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${class_name}`}
-    >
-      {label_text}: {status_value}
-    </span>
-  )
-}
+import { profileApi } from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
-  const [order_list, setOrderList] = useState([])
-  const [is_loading_orders, setIsLoadingOrders] = useState(false)
-  const [order_error_text, setOrderErrorText] = useState('')
+  const { refresh_user } = useAuth()
+  const [profile_data, setProfileData] = useState(null)
+  const [is_loading, setIsLoading] = useState(true)
+  const [error_text, setErrorText] = useState('')
+  const [success_text, setSuccessText] = useState('')
+  const [password_error_text, setPasswordErrorText] = useState('')
+  const [password_success_text, setPasswordSuccessText] = useState('')
+  const [is_updating_profile, setIsUpdatingProfile] = useState(false)
+  const [is_changing_password, setIsChangingPassword] = useState(false)
+  const [is_uploading_avatar, setIsUploadingAvatar] = useState(false)
+
+  const [profile_form, setProfileForm] = useState({
+    username: '',
+    email: '',
+    avatar: '',
+    phone: '',
+    address: ''
+  })
+  const [password_form, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: ''
+  })
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoadingOrders(true)
-      setOrderErrorText('')
+    const fetch_profile = async () => {
+      setIsLoading(true)
+      setErrorText('')
 
       try {
-        const response = await orderApi.getOrders()
-        setOrderList(response.data?.data || [])
+        const response = await profileApi.getMe()
+        const next_profile = response.data?.data || null
+        setProfileData(next_profile)
+        setProfileForm({
+          username: next_profile?.username || '',
+          email: next_profile?.email || '',
+          avatar: next_profile?.avatar || '',
+          phone: next_profile?.phone || '',
+          address: next_profile?.address || ''
+        })
       } catch (error) {
-        setOrderErrorText(error.message || 'Cannot load orders')
+        setErrorText(error.message || 'Cannot load profile')
       } finally {
-        setIsLoadingOrders(false)
+        setIsLoading(false)
       }
     }
 
-    fetchOrders()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetch_profile()
   }, [])
 
+  const handle_profile_change = event => {
+    const { name, value } = event.target
+    setProfileForm(prev_state => ({
+      ...prev_state,
+      [name]: value
+    }))
+  }
+
+  const handle_password_change = event => {
+    const { name, value } = event.target
+    setPasswordForm(prev_state => ({
+      ...prev_state,
+      [name]: value
+    }))
+  }
+
+  const handle_profile_submit = async event => {
+    event.preventDefault()
+    setErrorText('')
+    setSuccessText('')
+
+    if (!profile_form.username.trim()) {
+      setErrorText('Username is required')
+      return
+    }
+    if (!/\S+@\S+\.\S+/.test(profile_form.email)) {
+      setErrorText('Invalid email format')
+      return
+    }
+
+    setIsUpdatingProfile(true)
+    try {
+      const response = await profileApi.updateMe({
+        username: profile_form.username.trim(),
+        email: profile_form.email.trim(),
+        avatar: profile_form.avatar.trim(),
+        phone: profile_form.phone.trim(),
+        address: profile_form.address.trim()
+      })
+      setProfileData(response.data?.data || null)
+      await refresh_user()
+      setSuccessText('Profile updated successfully')
+    } catch (error) {
+      setErrorText(error.message || 'Cannot update profile')
+    } finally {
+      setIsUpdatingProfile(false)
+    }
+  }
+
+  const handle_avatar_upload = async event => {
+    const selected_file = event.target.files?.[0]
+    if (!selected_file) {
+      return
+    }
+
+    setErrorText('')
+    setSuccessText('')
+    setIsUploadingAvatar(true)
+    try {
+      const form_data = new FormData()
+      form_data.append('images', selected_file)
+      const response = await profileApi.uploadAvatar(form_data)
+      const avatar_url = response.data?.data?.avatar_url || ''
+
+      setProfileForm(prev_state => ({
+        ...prev_state,
+        avatar: avatar_url
+      }))
+      setSuccessText('Avatar uploaded. Click "Update profile" to save.')
+    } catch (error) {
+      setErrorText(error.message || 'Cannot upload avatar')
+    } finally {
+      setIsUploadingAvatar(false)
+      event.target.value = ''
+    }
+  }
+
+  const handle_password_submit = async event => {
+    event.preventDefault()
+    setPasswordErrorText('')
+    setPasswordSuccessText('')
+
+    if (!password_form.oldPassword || !password_form.newPassword) {
+      setPasswordErrorText('Please fill all password fields')
+      return
+    }
+    if (password_form.newPassword.length < 6) {
+      setPasswordErrorText('New password must be at least 6 characters')
+      return
+    }
+
+    setIsChangingPassword(true)
+    try {
+      await profileApi.changePassword({
+        oldPassword: password_form.oldPassword,
+        newPassword: password_form.newPassword
+      })
+      setPasswordForm({ oldPassword: '', newPassword: '' })
+      setPasswordSuccessText('Password changed successfully')
+    } catch (error) {
+      setPasswordErrorText(error.message || 'Cannot change password')
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
   return (
-    <main className='mx-auto min-h-screen max-w-4xl px-6 pb-12 pt-28'>
-      <section className='glass-card rounded-2xl p-6'>
-        <h1 className='font-display text-2xl font-bold uppercase text-white'>
-          My account
-        </h1>
-        <p className='mt-2 text-sm text-[#94a3b8]'>
-          Signed in as {user?.username || user?.email}
-        </p>
-
-        <div className='mt-6 space-y-2 text-sm text-[#cbd5e1]'>
-          <p>Username: {user?.username || 'N/A'}</p>
-          <p>Email: {user?.email || 'N/A'}</p>
-          <p>User ID: {user?.user_id || 'N/A'}</p>
+    <main className='mx-auto min-h-screen max-w-4xl px-6 pb-12 pt-28 text-white'>
+      <section className='rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
+        <h1 className='text-2xl font-bold'>My profile</h1>
+        <div className='mt-4 flex items-center gap-4'>
+          {profile_data?.avatar ? (
+            <img
+              src={profile_data.avatar}
+              alt='Profile avatar'
+              className='h-20 w-20 rounded-full border border-white/20 object-cover'
+            />
+          ) : (
+            <div className='flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/5 text-xs text-[#94a3b8]'>
+              No Avatar
+            </div>
+          )}
+          <div className='text-sm text-[#94a3b8]'>
+            Upload avatar in Edit profile section
+          </div>
         </div>
-
-        <button
-          type='button'
-          onClick={logout}
-          className='mt-6 rounded-lg border border-red-400/40 bg-red-500/10 px-4 py-2 text-xs font-display uppercase tracking-wider text-red-300 transition hover:bg-red-500/20'
-        >
-          Logout
-        </button>
+        {is_loading ? (
+          <p className='mt-3 text-sm text-[#94a3b8]'>Loading profile...</p>
+        ) : (
+          <div className='mt-4 grid gap-3 text-sm text-[#cbd5e1] sm:grid-cols-2'>
+            <p>Username: {profile_data?.username || 'N/A'}</p>
+            <p>Email: {profile_data?.email || 'N/A'}</p>
+            <p>Phone: {profile_data?.phone || 'N/A'}</p>
+            <p>Address: {profile_data?.address || 'N/A'}</p>
+          </div>
+        )}
       </section>
 
-      <section className='mt-6 rounded-2xl border border-white/10 bg-white/5 p-6'>
-        <header className='flex items-center justify-between gap-4'>
-          <h2 className='font-display text-lg font-bold uppercase tracking-wider text-white'>
-            My orders
-          </h2>
-          <span className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-            {order_list.length} order(s)
-          </span>
-        </header>
-
-        {is_loading_orders && (
-          <p className='mt-4 text-sm text-[#94a3b8]'>Loading orders...</p>
+      <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
+        <h2 className='text-lg font-semibold'>Edit profile</h2>
+        {error_text && (
+          <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
+            {error_text}
+          </p>
         )}
-
-        {!is_loading_orders && order_error_text && (
-          <p className='mt-4 text-sm font-semibold text-red-300'>
-            {order_error_text}
+        {success_text && (
+          <p className='mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300'>
+            {success_text}
           </p>
         )}
 
-        {!is_loading_orders && !order_error_text && order_list.length === 0 && (
-          <p className='mt-4 text-sm text-[#94a3b8]'>
-            You have no orders yet. Create your first order from cart.
+        <form className='mt-4 grid gap-3' onSubmit={handle_profile_submit}>
+          <label className='text-sm text-[#cbd5e1]'>Profile avatar</label>
+          <input
+            type='file'
+            accept='image/*'
+            onChange={handle_avatar_upload}
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#7c3aed] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white'
+          />
+          {is_uploading_avatar && (
+            <p className='text-xs text-[#94a3b8]'>Uploading avatar...</p>
+          )}
+          {profile_form.avatar && (
+            <img
+              src={profile_form.avatar}
+              alt='Avatar preview'
+              className='h-20 w-20 rounded-full border border-white/20 object-cover'
+            />
+          )}
+          <input
+            name='username'
+            value={profile_form.username}
+            onChange={handle_profile_change}
+            placeholder='Username'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <input
+            name='email'
+            value={profile_form.email}
+            onChange={handle_profile_change}
+            placeholder='Email'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <input
+            name='phone'
+            value={profile_form.phone}
+            onChange={handle_profile_change}
+            placeholder='Phone'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <input
+            name='address'
+            value={profile_form.address}
+            onChange={handle_profile_change}
+            placeholder='Address'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <button
+            type='submit'
+            disabled={is_updating_profile}
+            className='rounded-lg bg-[#7c3aed] px-4 py-2 text-sm font-semibold disabled:opacity-60'
+          >
+            {is_updating_profile ? 'Updating...' : 'Update profile'}
+          </button>
+        </form>
+      </section>
+
+      <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
+        <h2 className='text-lg font-semibold'>Change password</h2>
+        {password_error_text && (
+          <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
+            {password_error_text}
+          </p>
+        )}
+        {password_success_text && (
+          <p className='mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300'>
+            {password_success_text}
           </p>
         )}
 
-        {!is_loading_orders && !order_error_text && order_list.length > 0 && (
-          <ul className='mt-4 space-y-3'>
-            {order_list.map(order_data => (
-              <li
-                key={order_data.order_id}
-                className='rounded-xl border border-white/10 bg-[#0f172a]/60 p-4'
-              >
-                <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-                  <div>
-                    <p className='font-display text-sm font-semibold uppercase tracking-wider text-white'>
-                      Order #{order_data.order_id}
-                    </p>
-                    <p className='mt-1 text-xs text-[#94a3b8]'>
-                      {new Date(order_data.created_at).toLocaleString('vi-VN')}
-                    </p>
-                    <p className='mt-1 text-sm text-[#cbd5e1]'>
-                      {order_data.address}
-                    </p>
-                  </div>
-                  <div className='flex flex-wrap gap-2'>
-                    <StatusBadge
-                      label_text='Order'
-                      status_value={order_data.status}
-                    />
-                    <StatusBadge
-                      label_text='Payment'
-                      status_value={order_data.payment_status}
-                      type_value='payment'
-                    />
-                  </div>
-                </div>
-
-                <div className='mt-3 flex items-center justify-between border-t border-white/10 pt-3'>
-                  <p className='text-sm text-[#94a3b8]'>
-                    {order_data.items.length} item(s)
-                  </p>
-                  <p className='font-display text-base font-bold text-white'>
-                    {formatVnd(order_data.total)}
-                  </p>
-                </div>
-
-                <ul className='mt-3 space-y-1'>
-                  {order_data.items.slice(0, 3).map(item_data => (
-                    <li
-                      key={`${order_data.order_id}-${item_data.variant_id}`}
-                      className='flex items-center justify-between text-sm text-[#cbd5e1]'
-                    >
-                      <span className='truncate pr-4'>{item_data.product_name}</span>
-                      <span>x{item_data.quantity}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className='mt-3 border-t border-white/10 pt-3'>
-                  <Link
-                    to={`/profile/orders/${order_data.order_id}`}
-                    className='text-xs font-semibold uppercase tracking-wider text-[#a78bfa] transition hover:text-[#c4b5fd]'
-                  >
-                    View details
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <form className='mt-4 grid gap-3' onSubmit={handle_password_submit}>
+          <input
+            name='oldPassword'
+            type='password'
+            value={password_form.oldPassword}
+            onChange={handle_password_change}
+            placeholder='Old password'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <input
+            name='newPassword'
+            type='password'
+            value={password_form.newPassword}
+            onChange={handle_password_change}
+            placeholder='New password'
+            className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
+          />
+          <button
+            type='submit'
+            disabled={is_changing_password}
+            className='rounded-lg bg-[#7c3aed] px-4 py-2 text-sm font-semibold disabled:opacity-60'
+          >
+            {is_changing_password ? 'Saving...' : 'Change password'}
+          </button>
+        </form>
       </section>
     </main>
   )

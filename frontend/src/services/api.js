@@ -82,6 +82,26 @@ export const orderApi = {
   }
 }
 
+export const profileApi = {
+  getMe() {
+    return api.get('/me')
+  },
+  updateMe(payload) {
+    return api.patch('/me', payload)
+  },
+  changePassword(payload) {
+    return api.patch('/me/password', payload)
+  },
+  uploadAvatar(form_data) {
+    return api.post('/uploads/profile', form_data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 60000
+    })
+  }
+}
+
 export const paymentApi = {
   createVnpay(payload) {
     return api.post('/payments/create-vnpay', payload)

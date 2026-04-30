@@ -81,3 +81,27 @@ export const uploadBrandImages = async (req, res, next) => {
     next(err)
   }
 }
+
+export const uploadProfileAvatar = async (req, res, next) => {
+  try {
+    const files = req.files || []
+    if (files.length === 0) {
+      const err = new Error('No image files uploaded')
+      err.status = 400
+      throw err
+    }
+
+    const upload_result = await upload_buffer(
+      files[0].buffer,
+      'aimforge/avatars'
+    )
+
+    return sendSuccess(
+      res,
+      { avatar_url: upload_result.secure_url },
+      'Avatar uploaded'
+    )
+  } catch (err) {
+    next(err)
+  }
+}

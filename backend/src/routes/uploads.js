@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  uploadProfileAvatar,
   uploadBrandImages,
   uploadCategoryImages,
   uploadProductImages
@@ -9,6 +10,12 @@ import { upload_images } from '../middlewares/upload.js'
 
 const router = Router()
 
+router.post(
+  '/profile',
+  requireAuth,
+  upload_images.array('images', 1),
+  uploadProfileAvatar
+)
 router.post(
   '/products',
   requireAuth,

@@ -23,6 +23,7 @@ const to_public_user = user_record => ({
   user_id: user_record.user_id,
   username: user_record.username,
   email: user_record.email,
+  avatar: user_record.avatar,
   status: user_record.status,
   last_login: user_record.last_login,
   created_at: user_record.created_at
@@ -190,6 +191,7 @@ export const get_me = async user_id => {
       user_id: true,
       username: true,
       email: true,
+      avatar: true,
       status: true,
       last_login: true,
       created_at: true,
@@ -215,6 +217,7 @@ export const get_me = async user_id => {
     user_id: user_record.user_id,
     username: user_record.username,
     email: user_record.email,
+    avatar: user_record.avatar,
     status: user_record.status,
     last_login: user_record.last_login,
     created_at: user_record.created_at,

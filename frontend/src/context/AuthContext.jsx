@@ -43,6 +43,18 @@ export function AuthProvider({ children }) {
     return response_data
   }
 
+  const refresh_user = async () => {
+    if (!token_value) {
+      setUserData(null)
+      return null
+    }
+
+    const response = await authApi.getMe()
+    const next_user = response.data.data || null
+    setUserData(next_user)
+    return next_user
+  }
+
   const register = async payload => {
     return authApi.register(payload)
   }
@@ -60,6 +72,7 @@ export function AuthProvider({ children }) {
       is_authenticated: Boolean(token_value && user_data),
       auth_loading,
       login,
+      refresh_user,
       register,
       logout
     }),
