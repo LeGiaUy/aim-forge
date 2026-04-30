@@ -217,6 +217,8 @@ export const getProductById = async (id) => {
     price: headlinePricing.price,
     final_price: headlinePricing.final_price,
     discount_price: headlinePricing.discount_price,
+    discount_start: product.discount_start,
+    discount_end: product.discount_end,
     discount_amount: headlinePricing.discount_amount,
     discount_percent: headlinePricing.discount_percent,
     category_id: product.category_id,

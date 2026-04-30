@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { adminAttributeApi, adminBrandApi, adminCategoryApi } from '../services/adminApi.js'
 
+const to_local_datetime_input = date_value => {
+  if (!date_value) return ''
+
+  const date_object = new Date(date_value)
+  if (Number.isNaN(date_object.getTime())) return ''
+
+  const pad_2 = value => String(value).padStart(2, '0')
+
+  const year = date_object.getFullYear()
+  const month = pad_2(date_object.getMonth() + 1)
+  const day = pad_2(date_object.getDate())
+  const hour = pad_2(date_object.getHours())
+  const minute = pad_2(date_object.getMinutes())
+
+  return `${year}-${month}-${day}T${hour}:${minute}`
+}
+
 export function useProductForm(initial_data = null) {
   const [form, setForm] = useState({
     name: '',
@@ -44,12 +61,8 @@ export function useProductForm(initial_data = null) {
       description: initial_data.description || '',
       price: String(initial_data.price ?? ''),
       discount_price: String(initial_data.discount_price ?? ''),
-      discount_start: initial_data.discount_start
-        ? new Date(initial_data.discount_start).toISOString().slice(0, 16)
-        : '',
-      discount_end: initial_data.discount_end
-        ? new Date(initial_data.discount_end).toISOString().slice(0, 16)
-        : '',
+      discount_start: to_local_datetime_input(initial_data.discount_start),
+      discount_end: to_local_datetime_input(initial_data.discount_end),
       category_id: initial_data.category?.category_id || '',
       brand_id: initial_data.brand?.brand_id || ''
     })
