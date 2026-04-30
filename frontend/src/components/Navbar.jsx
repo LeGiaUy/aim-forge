@@ -26,12 +26,24 @@ const CartIcon = () => (
 
 const navLinks = [
   { label: 'Home', to: '/' },
-  { label: 'Featured', to: '/#featured-products' }
+  { label: 'Chuot', to: '/chuot' },
+  { label: 'Ban phim', to: '/ban-phim' },
+  { label: 'Lot chuot', to: '/lot-chuot' },
+  {
+    label: 'Phu kien',
+    to: '/phu-kien',
+    children: [
+      { label: 'Feet chuot', to: '/phu-kien/feet-chuot' },
+      { label: 'Grip tape', to: '/phu-kien/grip-tape' },
+      { label: 'Keycap', to: '/phu-kien/keycap' }
+    ]
+  }
 ]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobile_submenu_open, setMobileSubmenuOpen] = useState(false)
   const location = useLocation()
   const { user, is_authenticated, logout } = useAuth()
   const { total_items } = useCart()
@@ -42,7 +54,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const closeMenu = () => setMenuOpen(false)
+  const closeMenu = () => {
+    setMenuOpen(false)
+    setMobileSubmenuOpen(false)
+  }
 
   return (
     <header
@@ -70,21 +85,65 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <ul className='m-0 hidden list-none items-center gap-8 p-0 md:flex'>
-          {navLinks.map(link => (
-            <li key={link.to}>
-              <Link
-                to={link.to}
-                onClick={closeMenu}
-                className={`font-body text-sm font-medium uppercase tracking-wider transition-colors duration-200 hover:text-[#9f67ff] ${
-                  location.pathname === link.to
-                    ? 'text-[#7c3aed]'
-                    : 'text-[#94a3b8]'
-                }`}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
+          {navLinks.map(link_item => {
+            const is_active = link_item.children
+              ? location.pathname.startsWith(link_item.to)
+              : location.pathname === link_item.to
+
+            if (!link_item.children) {
+              return (
+                <li key={link_item.to}>
+                  <Link
+                    to={link_item.to}
+                    onClick={closeMenu}
+                    className={`font-body text-sm font-medium uppercase tracking-wider transition-colors duration-200 hover:text-[#9f67ff] ${
+                      is_active ? 'text-[#7c3aed]' : 'text-[#94a3b8]'
+                    }`}
+                  >
+                    {link_item.label}
+                  </Link>
+                </li>
+              )
+            }
+
+            return (
+              <li key={link_item.to} className='group relative'>
+                <Link
+                  to={link_item.to}
+                  onClick={closeMenu}
+                  className={`flex items-center gap-1 font-body text-sm font-medium uppercase tracking-wider transition-colors duration-200 hover:text-[#9f67ff] ${
+                    is_active ? 'text-[#7c3aed]' : 'text-[#94a3b8]'
+                  }`}
+                >
+                  {link_item.label}
+                  <svg
+                    width='14'
+                    height='14'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    <polyline points='6 9 12 15 18 9' />
+                  </svg>
+                </Link>
+
+                <div className='invisible absolute left-0 top-full z-20 mt-3 w-48 rounded-lg border border-white/10 bg-[#121225] p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100'>
+                  {link_item.children.map(child_item => (
+                    <Link
+                      key={child_item.to}
+                      to={child_item.to}
+                      onClick={closeMenu}
+                      className='block rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-[#9f67ff]'
+                    >
+                      {child_item.label}
+                    </Link>
+                  ))}
+                </div>
+              </li>
+            )
+          })}
         </ul>
 
         {/* Actions */}
@@ -151,15 +210,62 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className='flex flex-col gap-4 border-t border-[#1e1e2e] bg-[#0f0f1a]/95 px-6 py-6 backdrop-blur-xl md:hidden'>
-          {navLinks.map(link => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className='font-body text-sm font-medium uppercase tracking-wider text-[#94a3b8] transition-colors hover:text-[#9f67ff]'
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map(link_item => {
+            if (!link_item.children) {
+              return (
+                <Link
+                  key={link_item.to}
+                  to={link_item.to}
+                  onClick={closeMenu}
+                  className='font-body text-sm font-medium uppercase tracking-wider text-[#94a3b8] transition-colors hover:text-[#9f67ff]'
+                >
+                  {link_item.label}
+                </Link>
+              )
+            }
+
+            return (
+              <div key={link_item.to} className='space-y-2'>
+                <button
+                  type='button'
+                  onClick={() => setMobileSubmenuOpen(prev_value => !prev_value)}
+                  className='flex w-full items-center justify-between font-body text-sm font-medium uppercase tracking-wider text-[#94a3b8] transition-colors hover:text-[#9f67ff]'
+                >
+                  {link_item.label}
+                  <svg
+                    width='14'
+                    height='14'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    {mobile_submenu_open ? (
+                      <polyline points='18 15 12 9 6 15' />
+                    ) : (
+                      <polyline points='6 9 12 15 18 9' />
+                    )}
+                  </svg>
+                </button>
+
+                {mobile_submenu_open && (
+                  <div className='grid gap-2 rounded-lg border border-white/10 bg-white/5 p-2'>
+                    {link_item.children.map(child_item => (
+                      <Link
+                        key={child_item.to}
+                        to={child_item.to}
+                        onClick={closeMenu}
+                        className='rounded-md px-2 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-[#9f67ff]'
+                      >
+                        {child_item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
           <div className='flex gap-3 border-t border-[#1e1e2e] pt-4'>
             <Link
               to='/cart'

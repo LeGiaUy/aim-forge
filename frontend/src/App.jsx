@@ -20,6 +20,13 @@ import ProductList from './pages/admin/products/ProductList.jsx'
 import ProductCreate from './pages/admin/products/ProductCreate.jsx'
 import ProductEdit from './pages/admin/products/ProductEdit.jsx'
 import DashboardPage from './pages/admin/dashboard/DashboardPage.jsx'
+import AccessoriesPage from './pages/catalog/AccessoriesPage.jsx'
+import GripTapePage from './pages/catalog/GripTapePage.jsx'
+import KeyboardPage from './pages/catalog/KeyboardPage.jsx'
+import KeycapPage from './pages/catalog/KeycapPage.jsx'
+import MouseFeetPage from './pages/catalog/MouseFeetPage.jsx'
+import MousepadPage from './pages/catalog/MousepadPage.jsx'
+import MousePage from './pages/catalog/MousePage.jsx'
 
 function App() {
   const location = useLocation()
@@ -34,6 +41,13 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path='/chuot' element={<MousePage />} />
+          <Route path='/ban-phim' element={<KeyboardPage />} />
+          <Route path='/lot-chuot' element={<MousepadPage />} />
+          <Route path='/phu-kien' element={<AccessoriesPage />} />
+          <Route path='/phu-kien/feet-chuot' element={<MouseFeetPage />} />
+          <Route path='/phu-kien/grip-tape' element={<GripTapePage />} />
+          <Route path='/phu-kien/keycap' element={<KeycapPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
           <Route path='/payment-return' element={<PaymentReturnPage />} />
