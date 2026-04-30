@@ -6,6 +6,9 @@ export function useProductForm(initial_data = null) {
     name: '',
     description: '',
     price: '',
+    discount_price: '',
+    discount_start: '',
+    discount_end: '',
     category_id: '',
     brand_id: ''
   })
@@ -40,6 +43,13 @@ export function useProductForm(initial_data = null) {
       name: initial_data.name || '',
       description: initial_data.description || '',
       price: String(initial_data.price ?? ''),
+      discount_price: String(initial_data.discount_price ?? ''),
+      discount_start: initial_data.discount_start
+        ? new Date(initial_data.discount_start).toISOString().slice(0, 16)
+        : '',
+      discount_end: initial_data.discount_end
+        ? new Date(initial_data.discount_end).toISOString().slice(0, 16)
+        : '',
       category_id: initial_data.category?.category_id || '',
       brand_id: initial_data.brand?.brand_id || ''
     })
@@ -199,6 +209,13 @@ export function useProductForm(initial_data = null) {
       name: form.name,
       description: form.description,
       price: Number(form.price),
+      discount_price: form.discount_price ? Number(form.discount_price) : null,
+      discount_start: form.discount_start
+        ? new Date(form.discount_start).toISOString()
+        : null,
+      discount_end: form.discount_end
+        ? new Date(form.discount_end).toISOString()
+        : null,
       category_id: Number(form.category_id),
       brand_id: Number(form.brand_id),
       specs: specs_payload,

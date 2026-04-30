@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { formatVnd } from '../utils/currency.js'
 
-// Add-to-cart icon
 const CartPlusIcon = () => (
   <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
     <circle cx='9' cy='21' r='1' /><circle cx='20' cy='21' r='1' />
@@ -13,7 +12,6 @@ const CartPlusIcon = () => (
   </svg>
 )
 
-// Eye icon
 const EyeIcon = () => (
   <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
     <path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z' />
@@ -21,7 +19,6 @@ const EyeIcon = () => (
   </svg>
 )
 
-// Fallback placeholder when no image
 function ImageFallback({ name }) {
   return (
     <div className='w-full h-full flex items-center justify-center bg-[#14141f]'>
@@ -41,6 +38,7 @@ function ImageFallback({ name }) {
   )
 }
 
+/** Card sản phẩm grid: hiển thị giá từ API (final_price, discount) — không tin giá frontend */
 export default function ProductCard({ product, index = 0 }) {
   const { is_authenticated } = useAuth()
   const { addToCart } = useCart()
@@ -51,12 +49,21 @@ export default function ProductCard({ product, index = 0 }) {
     product_id,
     name,
     brand,
-    price,
     representative_variant
   } = product
-  const display_price = price
-  const imageUrl = representative_variant?.main_image?.image_url
 
+  const original_price = product.price ?? null
+  const final_price =
+    product.final_price ?? original_price
+  const discount_amount = product.discount_amount ?? null
+  const has_active_discount =
+    discount_amount != null &&
+    discount_amount > 0 &&
+    final_price != null &&
+    original_price != null &&
+    final_price < original_price
+
+  const imageUrl = representative_variant?.main_image?.image_url
   const can_add = Boolean(representative_variant?.variant_id) && is_authenticated
   const out_of_stock = (representative_variant?.stock || 0) <= 0
 
@@ -82,7 +89,6 @@ export default function ProductCard({ product, index = 0 }) {
                  animate-gridFade"
       style={{ animationDelay: `${index * 0.07}s` }}
     >
-      {/* Image container */}
       <Link to={`/product/${product_id}`} aria-label={`View ${name}`}>
         <div className="relative h-56 overflow-hidden bg-[#0f0f1a]">
           {imageUrl && !imgError ? (
@@ -97,10 +103,8 @@ export default function ProductCard({ product, index = 0 }) {
             <ImageFallback name={name} />
           )}
 
-          {/* Overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-60" />
 
-          {/* Quick view button on hover */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <span
               className='flex items-center gap-2 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-wider text-white'
@@ -110,7 +114,6 @@ export default function ProductCard({ product, index = 0 }) {
             </span>
           </div>
 
-          {/* Brand badge */}
           {brand && (
             <div
               className='absolute top-3 left-3 px-2.5 py-1 rounded text-[10px] font-display font-bold uppercase tracking-wider'
@@ -120,7 +123,6 @@ export default function ProductCard({ product, index = 0 }) {
             </div>
           )}
 
-          {/* In-stock indicator */}
           {representative_variant?.stock > 0 && (
             <div className="absolute top-3 right-3 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -132,7 +134,6 @@ export default function ProductCard({ product, index = 0 }) {
         </div>
       </Link>
 
-      {/* Card body */}
       <div className="p-4">
         <Link to={`/product/${product_id}`} className="block">
           <h3
@@ -147,21 +148,34 @@ export default function ProductCard({ product, index = 0 }) {
           <p className="mt-1 text-[#64748b] text-xs font-body">{brand.name}</p>
         )}
 
-        {/* Price + CTA */}
         <div className="mt-3 flex items-center justify-between gap-2">
-          <div>
-            <span className="font-display text-xl font-bold text-[#7c3aed]">
-              {display_price !== null && display_price !== undefined
-                ? formatVnd(display_price)
-                : '—'}
-            </span>
+          <div className="min-w-0 flex-1">
+            {has_active_discount ? (
+              <div className="flex flex-col gap-0.5">
+                <span className="font-display text-sm text-[#64748b] line-through">
+                  {formatVnd(original_price)}
+                </span>
+                <span className="font-display text-xl font-bold text-[#06b6d4]">
+                  {formatVnd(final_price)}
+                </span>
+                <span className="text-[11px] font-semibold text-emerald-400">
+                  Tiết kiệm {formatVnd(Math.round(discount_amount))}
+                </span>
+              </div>
+            ) : (
+              <span className="font-display text-xl font-bold text-[#7c3aed]">
+                {final_price !== null && final_price !== undefined
+                  ? formatVnd(final_price)
+                  : '—'}
+              </span>
+            )}
           </div>
 
           <button
             id={`add-to-cart-${product_id}`}
             onClick={handleAddToCart}
             aria-label={`Add ${name} to cart`}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-display font-semibold
+            className={`flex shrink-0 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-display font-semibold
                         uppercase tracking-wider transition-all duration-200 cursor-pointer
                         ${!is_authenticated || out_of_stock
                           ? 'cursor-not-allowed border border-white/20 bg-white/10 text-[#64748b]'
@@ -188,7 +202,6 @@ export default function ProductCard({ product, index = 0 }) {
         </div>
       </div>
 
-      {/* Bottom neon accent line */}
       <div
         className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500"
         style={{ background: 'linear-gradient(90deg, #7c3aed, #06b6d4)' }}

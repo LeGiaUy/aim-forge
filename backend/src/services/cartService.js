@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "../config/db.js";
+import { getProductPricingPayload } from "./pricing.service.js";
 
 const addItemSchema = z.object({
   variant_id: z.number().int().positive(),
@@ -43,16 +44,29 @@ export const getCart = async (userId) => {
 
   if (!cart) return { cart_id: null, items: [], total: 0 };
 
-  const items = cart.items.map((item) => ({
-    variant_id: item.variant_id,
-    quantity: item.quantity,
-    price: Number(item.variant.price),
-    subtotal: Number(item.variant.price) * item.quantity,
-    product_name: item.variant.product.name,
-    brand: item.variant.product.brand?.name || null,
-    sku: item.variant.sku,
-    image: item.variant.images[0]?.image_url || null,
-  }));
+  const items = cart.items.map((item) => {
+    const vp = getProductPricingPayload({
+      base_price: item.variant.product.price,
+      discount_price: item.variant.product.discount_price,
+      discount_start: item.variant.product.discount_start,
+      discount_end: item.variant.product.discount_end
+    });
+    return {
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      price: vp.final_price,
+      price_original: vp.price,
+      final_price: vp.final_price,
+      discount_price: vp.discount_price,
+      discount_amount: vp.discount_amount,
+      discount_percent: vp.discount_percent,
+      subtotal: vp.final_price * item.quantity,
+      product_name: item.variant.product.name,
+      brand: item.variant.product.brand?.name || null,
+      sku: item.variant.sku,
+      image: item.variant.images[0]?.image_url || null,
+    };
+  });
 
   const total = items.reduce((sum, i) => sum + i.subtotal, 0);
 

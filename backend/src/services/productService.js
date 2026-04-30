@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "../config/db.js";
+import { getProductPricingPayload } from "./pricing.service.js";
 
 const variantSchema = z.object({
   variant_id: z.number().int().optional(),
@@ -13,6 +14,9 @@ const productCreateSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   price: z.number().nonnegative(),
+  discount_price: z.number().nonnegative().optional().nullable(),
+  discount_start: z.coerce.date().optional().nullable(),
+  discount_end: z.coerce.date().optional().nullable(),
   category_id: z.number().int(),
   brand_id: z.number().int(),
   specs: z.array(z.object({
@@ -26,6 +30,9 @@ const productUpdateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
   price: z.number().nonnegative().optional(),
+  discount_price: z.number().nonnegative().optional().nullable(),
+  discount_start: z.coerce.date().optional().nullable(),
+  discount_end: z.coerce.date().optional().nullable(),
   category_id: z.number().int().optional(),
   brand_id: z.number().int().optional(),
   specs: z.array(z.object({
@@ -63,7 +70,7 @@ const buildWhere = ({ category_id, brand_id, search }) => {
   return where;
 };
 
-// Format a product for list response
+// Format a product for list response (pricing from product)
 const formatProductList = (product) => {
   const activeVariants = (product.variants || []).filter(v => v.is_active);
 
@@ -75,6 +82,13 @@ const formatProductList = (product) => {
     representative?.images?.[0] ||
     null;
 
+  const pricing = getProductPricingPayload({
+    base_price: product.price,
+    discount_price: product.discount_price,
+    discount_start: product.discount_start,
+    discount_end: product.discount_end
+  });
+
   return {
     product_id: product.product_id,
     name: product.name,
@@ -83,7 +97,11 @@ const formatProductList = (product) => {
     category: product.category
       ? { category_id: product.category.category_id, name: product.category.name }
       : null,
-    price: Number(product.price),
+    price: pricing.price,
+    final_price: pricing.final_price,
+    discount_price: pricing.discount_price,
+    discount_amount: pricing.discount_amount,
+    discount_percent: pricing.discount_percent,
     total_stock,
     representative_variant: representative
       ? {
@@ -93,6 +111,7 @@ const formatProductList = (product) => {
           main_image: mainImage
             ? { image_url: mainImage.image_url, is_main: mainImage.is_main }
             : null,
+          ...pricing,
         }
       : null,
   };
@@ -184,11 +203,22 @@ export const getProductById = async (id) => {
     throw err;
   }
 
+  const headlinePricing = getProductPricingPayload({
+    base_price: product.price,
+    discount_price: product.discount_price,
+    discount_start: product.discount_start,
+    discount_end: product.discount_end
+  })
+
   return {
     product_id: product.product_id,
     name: product.name,
     description: product.description,
-    price: Number(product.price),
+    price: headlinePricing.price,
+    final_price: headlinePricing.final_price,
+    discount_price: headlinePricing.discount_price,
+    discount_amount: headlinePricing.discount_amount,
+    discount_percent: headlinePricing.discount_percent,
     category_id: product.category_id,
     brand_id: product.brand_id,
     brand: product.brand,
@@ -198,31 +228,40 @@ export const getProductById = async (id) => {
       attribute: s.attribute.name,
       value: s.value,
     })),
-    variants: product.variants.map((v) => ({
-      variant_id: v.variant_id,
-      color: v.color,
-      sku: v.sku,
-      stock: v.stock,
-      images: v.images.map(img => img.image_url),
-      attributes: v.color
-        ? [{ attribute: "Color", value: v.color }]
-        : v.attributes.map((va) => ({
-            attribute_id: va.value.attribute.attribute_id,
-            attribute: va.value.attribute.name,
-            value_id: va.value.value_id,
-            value: va.value.value,
-          })),
-      // Detailed arrays for UI display
-      images_detail: v.images,
-      attributes_detail: v.color
-        ? [{ attribute_id: null, value_id: null, attribute: "Color", value: v.color }]
-        : v.attributes.map((va) => ({
-            attribute_id: va.value.attribute.attribute_id,
-            value_id: va.value.value_id,
-            attribute: va.value.attribute.name,
-            value: va.value.value,
-          })),
-    })),
+    variants: product.variants.map((v) => {
+      const vp = getProductPricingPayload({
+        base_price: product.price,
+        discount_price: product.discount_price,
+        discount_start: product.discount_start,
+        discount_end: product.discount_end
+      });
+      return {
+        variant_id: v.variant_id,
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+        ...vp,
+        images: v.images.map(img => img.image_url),
+        attributes: v.color
+          ? [{ attribute: "Color", value: v.color }]
+          : v.attributes.map((va) => ({
+              attribute_id: va.value.attribute.attribute_id,
+              attribute: va.value.attribute.name,
+              value_id: va.value.value_id,
+              value: va.value.value,
+            })),
+        // Detailed arrays for UI display
+        images_detail: v.images,
+        attributes_detail: v.color
+          ? [{ attribute_id: null, value_id: null, attribute: "Color", value: v.color }]
+          : v.attributes.map((va) => ({
+              attribute_id: va.value.attribute.attribute_id,
+              value_id: va.value.value_id,
+              attribute: va.value.attribute.name,
+              value: va.value.value,
+            })),
+      };
+    }),
   };
 };
 
@@ -234,7 +273,18 @@ export const createProduct = async (body) => {
     throw err;
   }
 
-  const { name, description, price, category_id, brand_id, specs, variants } = parsed.data;
+  const {
+    name,
+    description,
+    price,
+    discount_price,
+    discount_start,
+    discount_end,
+    category_id,
+    brand_id,
+    specs,
+    variants
+  } = parsed.data;
 
   await validateProductAttributes(category_id, specs);
 
@@ -244,6 +294,9 @@ export const createProduct = async (body) => {
       name,
       description,
       price,
+      discount_price: discount_price ?? null,
+      discount_start: discount_start ?? null,
+      discount_end: discount_end ?? null,
       category_id,
       brand_id,
       is_active: true,
@@ -259,7 +312,6 @@ export const createProduct = async (body) => {
         create: variants.map(v => ({
             color: v.color,
           sku: v.sku,
-          price,
           stock: v.stock,
           is_active: true,
           images: v.images?.length ? {
@@ -289,7 +341,18 @@ export const updateProduct = async (id, body) => {
     throw err;
   }
 
-  const { name, description, price, category_id, brand_id, specs, variants } = parsed.data;
+  const {
+    name,
+    description,
+    price,
+    discount_price,
+    discount_start,
+    discount_end,
+    category_id,
+    brand_id,
+    specs,
+    variants
+  } = parsed.data;
   const product_id = Number(id)
 
   const existing = await prisma.product.findUnique({ where: { product_id } });
@@ -311,13 +374,9 @@ export const updateProduct = async (id, body) => {
     if (description !== undefined) dataToUpdate.description = description;
     if (price !== undefined) dataToUpdate.price = price;
     if (category_id !== undefined) dataToUpdate.category_id = category_id;
-    if (price !== undefined) {
-      await tx.productVariant.updateMany({
-        where: { product_id },
-        data: { price }
-      });
-    }
-
+    if (discount_price !== undefined) dataToUpdate.discount_price = discount_price;
+    if (discount_start !== undefined) dataToUpdate.discount_start = discount_start;
+    if (discount_end !== undefined) dataToUpdate.discount_end = discount_end;
     if (brand_id !== undefined) dataToUpdate.brand_id = brand_id;
 
     if (Object.keys(dataToUpdate).length > 0) {
@@ -382,14 +441,17 @@ export const updateProduct = async (id, body) => {
             await tx.variantAttributeValue.deleteMany({ where: { variant_id: v.variant_id } });
             await tx.variantImage.deleteMany({ where: { variant_id: v.variant_id } });
 
+            const variant_update_data = {
+              color: v.color,
+              sku: v.sku,
+              stock: v.stock,
+              is_active: true,
+            };
+
             await tx.productVariant.update({
               where: { variant_id: v.variant_id },
               data: {
-                color: v.color,
-                sku: v.sku,
-                price: price ?? existing.price,
-                stock: v.stock,
-                is_active: true,
+                ...variant_update_data,
                 images: v.images?.length ? {
                   createMany: {
                     data: v.images.map((imgUrl, idx) => ({
@@ -402,15 +464,17 @@ export const updateProduct = async (id, body) => {
               }
             });
           } else {
-            // Create new variant
+            const variant_create_data = {
+              product_id,
+              color: v.color,
+              sku: v.sku,
+              stock: v.stock,
+              is_active: true,
+            };
+
             await tx.productVariant.create({
               data: {
-                product_id,
-                color: v.color,
-                sku: v.sku,
-                price: price ?? existing.price,
-                stock: v.stock,
-                is_active: true,
+                ...variant_create_data,
                 images: v.images?.length ? {
                   createMany: {
                     data: v.images.map((imgUrl, idx) => ({

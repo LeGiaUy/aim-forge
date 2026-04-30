@@ -121,6 +121,39 @@ export default function ProductCreate() {
               />
             </div>
 
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+              <div>
+                <label className='admin-label'>Discount Price (VND)</label>
+                <input
+                  type='number'
+                  min='0'
+                  step='1'
+                  value={form.discount_price}
+                  onChange={e => handleFormChange('discount_price', e.target.value)}
+                  className='admin-input w-full'
+                  placeholder='e.g. 1390000'
+                />
+              </div>
+              <div>
+                <label className='admin-label'>Discount Start</label>
+                <input
+                  type='datetime-local'
+                  value={form.discount_start}
+                  onChange={e => handleFormChange('discount_start', e.target.value)}
+                  className='admin-input w-full'
+                />
+              </div>
+              <div>
+                <label className='admin-label'>Discount End</label>
+                <input
+                  type='datetime-local'
+                  value={form.discount_end}
+                  onChange={e => handleFormChange('discount_end', e.target.value)}
+                  className='admin-input w-full'
+                />
+              </div>
+            </div>
+
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <div>
                 <label className='admin-label'>Category *</label>

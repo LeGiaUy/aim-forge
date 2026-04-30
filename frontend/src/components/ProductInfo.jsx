@@ -42,7 +42,7 @@ export default function ProductInfo({
       </p>
 
       <PriceDisplay
-        price_value={product_data.price}
+        product_data={product_data}
         selected_variant={selected_variant}
       />
     </section>

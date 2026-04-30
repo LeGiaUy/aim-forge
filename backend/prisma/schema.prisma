@@ -116,6 +116,9 @@ model Product {
   name        String
   description String?
   price       Decimal @default(0)
+  discount_price Decimal?
+  discount_start DateTime?
+  discount_end   DateTime?
 
   category_id Int?
   brand_id    Int?
@@ -138,7 +141,6 @@ model ProductVariant {
 
   color     String?
   sku       String? @unique
-  price     Decimal
   stock     Int     @default(0)
   is_active Boolean @default(true)
 

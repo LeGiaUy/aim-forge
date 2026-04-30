@@ -11,7 +11,15 @@ export default function RelatedProducts({ products }) {
       </h2>
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        {products.map(item => (
+        {products.map(item => {
+          const orig = item.price
+          const fin =
+            item.final_price ?? item.representative_variant?.final_price ?? orig
+          const save = item.discount_amount
+          const show_disc =
+            save != null && save > 0 && fin != null && orig != null && fin < orig
+
+          return (
           <Link
             key={item.product_id}
             to={`/product/${item.product_id}`}
@@ -33,12 +41,27 @@ export default function RelatedProducts({ products }) {
               <h3 className='line-clamp-2 font-display text-sm font-semibold uppercase text-white'>
                 {item.name}
               </h3>
-              <p className='font-display text-lg font-bold text-[#9f67ff]'>
-                {formatVnd(item.price)}
-              </p>
+              {show_disc ? (
+                <div className='space-y-1'>
+                  <p className='font-display text-xs text-[#64748b] line-through'>
+                    {formatVnd(orig)}
+                  </p>
+                  <p className='font-display text-lg font-bold text-[#06b6d4]'>
+                    {formatVnd(fin)}
+                  </p>
+                  <p className='text-[10px] font-semibold text-emerald-400'>
+                    Tiết kiệm {formatVnd(Math.round(save))}
+                  </p>
+                </div>
+              ) : (
+                <p className='font-display text-lg font-bold text-[#9f67ff]'>
+                  {formatVnd(fin)}
+                </p>
+              )}
             </div>
           </Link>
-        ))}
+          )
+        })}
       </div>
     </section>
   )

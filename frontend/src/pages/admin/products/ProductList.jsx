@@ -73,6 +73,22 @@ export default function ProductList() {
     return formatVnd(price)
   }
 
+  const hasActiveDiscount = product_item => {
+    if (
+      product_item.discount_amount == null ||
+      product_item.discount_amount <= 0
+    ) {
+      return false
+    }
+    if (
+      product_item.final_price == null ||
+      product_item.price == null
+    ) {
+      return false
+    }
+    return product_item.final_price < product_item.price
+  }
+
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-8'>
       {/* ─── Header ─── */}
@@ -178,9 +194,23 @@ export default function ProductList() {
                   <td className='px-5 py-4 text-[#94a3b8]'>{p.brand?.name || '—'}</td>
                   <td className='px-5 py-4'>
                     {p.price != null ? (
-                      <span className='text-emerald-400'>
-                        {formatPrice(p.price)}
-                      </span>
+                      hasActiveDiscount(p) ? (
+                        <div className='space-y-0.5'>
+                          <p className='text-xs text-[#64748b] line-through'>
+                            {formatPrice(p.price)}
+                          </p>
+                          <p className='font-semibold text-emerald-400'>
+                            {formatPrice(p.final_price)}
+                          </p>
+                          <p className='text-[11px] font-medium text-cyan-300'>
+                            Save {formatPrice(Math.round(p.discount_amount))}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className='text-emerald-400'>
+                          {formatPrice(p.price)}
+                        </span>
+                      )
                     ) : (
                       <span className='text-[#64748b]'>—</span>
                     )}

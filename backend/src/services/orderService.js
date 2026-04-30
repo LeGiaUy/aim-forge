@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "../config/db.js";
+import { getFinalPrice } from "./pricing.service.js";
 
 const createOrderSchema = z.object({
   address: z.string().min(5),
@@ -20,7 +21,7 @@ export const createOrder = async (userId, body) => {
     where: { user_id: userId },
     include: {
       items: {
-        include: { variant: true },
+        include: { variant: { include: { product: true } } },
       },
     },
   });
@@ -31,13 +32,16 @@ export const createOrder = async (userId, body) => {
     throw err;
   }
 
-  // Lock prices from variants
-  const total = cart.items.reduce(
-    (sum, item) => sum + Number(item.variant.price) * item.quantity,
-    0
-  );
+  const total = cart.items.reduce((sum, item) => {
+    const unit_final = getFinalPrice({
+      base_price: item.variant.product.price,
+      discount_price: item.variant.product.discount_price,
+      discount_start: item.variant.product.discount_start,
+      discount_end: item.variant.product.discount_end
+    });
+    return sum + unit_final * item.quantity;
+  }, 0);
 
-  // Create order + order items in a transaction
   const order = await prisma.$transaction(async (tx) => {
     const newOrder = await tx.order.create({
       data: {
@@ -46,11 +50,19 @@ export const createOrder = async (userId, body) => {
         total,
         address,
         items: {
-          create: cart.items.map((item) => ({
-            variant_id: item.variant_id,
-            price: item.variant.price, // locked price
-            quantity: item.quantity,
-          })),
+          create: cart.items.map((item) => {
+            const unit_final = getFinalPrice({
+              base_price: item.variant.product.price,
+              discount_price: item.variant.product.discount_price,
+              discount_start: item.variant.product.discount_start,
+              discount_end: item.variant.product.discount_end
+            });
+            return {
+              variant_id: item.variant_id,
+              price: unit_final,
+              quantity: item.quantity,
+            };
+          }),
         },
       },
       include: { items: true },
