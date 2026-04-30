@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Footer from './components/Footer.jsx'
 import Navbar from './components/Navbar.jsx'
 import PrivateRoute from './components/PrivateRoute.jsx'
+import AdminRoute from './components/AdminRoute.jsx'
 import Home from './pages/Home.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
@@ -20,6 +21,8 @@ import ProductList from './pages/admin/products/ProductList.jsx'
 import ProductCreate from './pages/admin/products/ProductCreate.jsx'
 import ProductEdit from './pages/admin/products/ProductEdit.jsx'
 import DashboardPage from './pages/admin/dashboard/DashboardPage.jsx'
+import UserList from './pages/admin/users/UserList.jsx'
+import UserDetail from './pages/admin/users/UserDetail.jsx'
 import AccessoriesPage from './pages/catalog/AccessoriesPage.jsx'
 import GripTapePage from './pages/catalog/GripTapePage.jsx'
 import KeyboardPage from './pages/catalog/KeyboardPage.jsx'
@@ -77,7 +80,14 @@ function App() {
           />
 
           {/* ─── Admin Routes ─── */}
-          <Route path='/admin' element={<AdminLayout />}>
+          <Route
+            path='/admin'
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
             <Route index element={<Navigate to='dashboard' replace />} />
             <Route path='dashboard' element={<DashboardPage />} />
             <Route path='products' element={<ProductList />} />
@@ -88,6 +98,8 @@ function App() {
             <Route path='categories' element={<CategoryList />} />
             <Route path='attributes' element={<AttributeList />} />
             <Route path='brands' element={<BrandList />} />
+            <Route path='users' element={<UserList />} />
+            <Route path='users/:id' element={<UserDetail />} />
           </Route>
         </Routes>
       </div>

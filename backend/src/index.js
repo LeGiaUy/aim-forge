@@ -16,6 +16,7 @@ import adminOrderRoutes from "./routes/adminOrder.routes.js";
 import statsRoutes from './routes/stats.routes.js'
 import attributeRoutes from "./routes/attributes.js";
 import uploadRoutes from "./routes/uploads.js";
+import adminUserRoutes from "./routes/user.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use("/api/admin/orders", adminOrderRoutes);
 app.use('/api/admin/stats', statsRoutes)
 app.use("/api/attributes", attributeRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/admin", adminUserRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

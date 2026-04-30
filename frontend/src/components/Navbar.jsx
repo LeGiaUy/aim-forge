@@ -25,15 +25,15 @@ const CartIcon = () => (
 )
 
 const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'Chuot', to: '/chuot' },
-  { label: 'Ban phim', to: '/ban-phim' },
-  { label: 'Lot chuot', to: '/lot-chuot' },
+  { label: 'Trang chủ', to: '/' },
+  { label: 'Chuột', to: '/chuot' },
+  { label: 'Bàn phím', to: '/ban-phim' },
+  { label: 'Lót chuột', to: '/lot-chuot' },
   {
-    label: 'Phu kien',
+    label: 'Phụ kiện',
     to: '/phu-kien',
     children: [
-      { label: 'Feet chuot', to: '/phu-kien/feet-chuot' },
+      { label: 'Feet chuột', to: '/phu-kien/feet-chuot' },
       { label: 'Grip tape', to: '/phu-kien/grip-tape' },
       { label: 'Keycap', to: '/phu-kien/keycap' }
     ]

@@ -7,7 +7,8 @@ const NAV_ITEMS = [
   { label: 'Orders', path: '/admin/orders' },
   { label: 'Categories', path: '/admin/categories' },
   { label: 'Brands', path: '/admin/brands' },
-  { label: 'Attributes', path: '/admin/attributes' }
+  { label: 'Attributes', path: '/admin/attributes' },
+  { label: 'Users', path: '/admin/users' }
 ]
 
 export default function AdminLayout() {

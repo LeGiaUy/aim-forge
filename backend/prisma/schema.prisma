@@ -42,6 +42,8 @@ model User {
   username   String   @unique
   email      String   @unique
   password   String
+  status     String   @default("ACTIVE")
+  last_login DateTime?
   created_at DateTime @default(now())
 
   roles  UserRole[]

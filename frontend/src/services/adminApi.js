@@ -123,3 +123,21 @@ export const adminStatsApi = {
     return api.get('/admin/stats/funnel', { params })
   }
 }
+
+export const adminUserApi = {
+  getUsers(params = {}) {
+    return api.get('/admin/users', { params })
+  },
+  getUserById(user_id) {
+    return api.get(`/admin/users/${user_id}`)
+  },
+  updateStatus(user_id, status) {
+    return api.patch(`/admin/users/${user_id}/status`, { status })
+  },
+  assignRoles(user_id, role_ids) {
+    return api.post(`/admin/users/${user_id}/roles`, { role_ids })
+  },
+  getRoles() {
+    return api.get('/admin/roles')
+  }
+}

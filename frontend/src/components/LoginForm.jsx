@@ -66,9 +66,12 @@ export default function LoginForm() {
 
     setIsLoading(true)
     try {
-      await login(payload)
+      const auth_data = await login(payload)
+      const has_admin_role = (auth_data.user?.roles || []).some(role_name =>
+        String(role_name).toUpperCase() === 'ADMIN'
+      )
       setToastMessage('Login success! Redirecting...')
-      setTimeout(() => navigate('/'), 700)
+      setTimeout(() => navigate(has_admin_role ? '/admin' : '/'), 700)
     } catch (error) {
       setErrorMessage(error.message || 'Invalid credentials')
     } finally {

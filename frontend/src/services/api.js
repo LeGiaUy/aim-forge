@@ -17,6 +17,12 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   err => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('aimforge_token')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
     const message =
       err.response?.data?.message || err.message || 'Something went wrong'
     return Promise.reject(new Error(message))
