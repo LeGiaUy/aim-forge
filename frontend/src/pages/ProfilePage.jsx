@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { profileApi } from '../services/api.js'
+import { orderApi } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { formatVnd } from '../utils/currency.js'
 
 export default function ProfilePage() {
   const { refresh_user } = useAuth()
   const [profile_data, setProfileData] = useState(null)
+  const [orders_data, setOrdersData] = useState([])
   const [is_loading, setIsLoading] = useState(true)
+  const [is_loading_orders, setIsLoadingOrders] = useState(true)
   const [error_text, setErrorText] = useState('')
+  const [orders_error_text, setOrdersErrorText] = useState('')
   const [success_text, setSuccessText] = useState('')
   const [password_error_text, setPasswordErrorText] = useState('')
   const [password_success_text, setPasswordSuccessText] = useState('')
@@ -27,13 +33,15 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    const fetch_profile = async () => {
+    const fetch_profile_and_orders = async () => {
       setIsLoading(true)
+      setIsLoadingOrders(true)
       setErrorText('')
+      setOrdersErrorText('')
 
       try {
-        const response = await profileApi.getMe()
-        const next_profile = response.data?.data || null
+        const profile_response = await profileApi.getMe()
+        const next_profile = profile_response.data?.data || null
         setProfileData(next_profile)
         setProfileForm({
           username: next_profile?.username || '',
@@ -47,11 +55,39 @@ export default function ProfilePage() {
       } finally {
         setIsLoading(false)
       }
+
+      try {
+        const orders_response = await orderApi.getOrders()
+        const next_orders = orders_response.data?.data || []
+        setOrdersData(Array.isArray(next_orders) ? next_orders : [])
+      } catch (error) {
+        setOrdersErrorText(error.message || 'Cannot load orders')
+      } finally {
+        setIsLoadingOrders(false)
+      }
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetch_profile()
+    fetch_profile_and_orders()
   }, [])
+
+  const get_status_class_name = status_value => {
+    const status_class_map = {
+      PENDING: 'border-amber-300/30 bg-amber-500/10 text-amber-300',
+      PAID: 'border-emerald-300/30 bg-emerald-500/10 text-emerald-300',
+      PROCESSING: 'border-indigo-300/30 bg-indigo-500/10 text-indigo-300',
+      SHIPPED: 'border-sky-300/30 bg-sky-500/10 text-sky-300',
+      COMPLETED: 'border-teal-300/30 bg-teal-500/10 text-teal-300',
+      FAILED: 'border-rose-300/30 bg-rose-500/10 text-rose-300',
+      CANCELLED: 'border-zinc-300/30 bg-zinc-500/10 text-zinc-300',
+      SUCCESS: 'border-emerald-300/30 bg-emerald-500/10 text-emerald-300'
+    }
+
+    return (
+      status_class_map[status_value] ||
+      'border-zinc-300/30 bg-zinc-500/10 text-zinc-300'
+    )
+  }
 
   const handle_profile_change = event => {
     const { name, value } = event.target
@@ -298,6 +334,94 @@ export default function ProfilePage() {
             {is_changing_password ? 'Saving...' : 'Change password'}
           </button>
         </form>
+      </section>
+
+      <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
+        <h2 className='text-lg font-semibold'>My orders</h2>
+
+        {orders_error_text && (
+          <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
+            {orders_error_text}
+          </p>
+        )}
+
+        {is_loading_orders ? (
+          <p className='mt-3 text-sm text-[#94a3b8]'>Loading orders...</p>
+        ) : orders_data.length === 0 ? (
+          <p className='mt-3 text-sm text-[#94a3b8]'>
+            You have no orders yet.
+          </p>
+        ) : (
+          <ul className='mt-4 space-y-3'>
+            {orders_data.map(order_item => (
+              <li
+                key={order_item.order_id}
+                className='rounded-xl border border-white/10 bg-[#020617] p-4'
+              >
+                <div className='flex flex-wrap items-start justify-between gap-3'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-semibold text-white'>
+                      Order #{order_item.order_id}
+                    </p>
+                    <p className='mt-1 text-xs text-[#94a3b8]'>
+                      {new Date(order_item.created_at).toLocaleString('vi-VN')}
+                    </p>
+                    <p className='mt-1 text-xs text-[#cbd5e1]'>
+                      Total: {formatVnd(order_item.total)}
+                    </p>
+                    {order_item.items?.[0] && (
+                      <div className='mt-2 flex items-center gap-2 rounded-lg border border-white/10 bg-[#0f172a]/60 p-2'>
+                        {order_item.items[0].image ? (
+                          <img
+                            src={order_item.items[0].image}
+                            alt={order_item.items[0].variant_name || order_item.items[0].product_name}
+                            className='h-10 w-10 rounded-md border border-white/10 object-cover'
+                          />
+                        ) : (
+                          <div className='flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-[#111827] text-[9px] text-[#94a3b8]'>
+                            No image
+                          </div>
+                        )}
+                        <div className='min-w-0'>
+                          <p className='truncate text-xs font-semibold text-white'>
+                            {order_item.items[0].product_name}
+                          </p>
+                          <p className='truncate text-xs text-[#cbd5e1]'>
+                            {order_item.items[0].variant_name ||
+                              `Variant #${order_item.items[0].variant_id}`}
+                          </p>
+                          {order_item.items.length > 1 && (
+                            <p className='text-[11px] text-[#94a3b8]'>
+                              +{order_item.items.length - 1} more item(s)
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${get_status_class_name(order_item.status)}`}
+                    >
+                      Order: {order_item.status}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${get_status_class_name(order_item.payment_status || 'PENDING')}`}
+                    >
+                      Payment: {order_item.payment_status || 'PENDING'}
+                    </span>
+                    <Link
+                      to={`/profile/orders/${order_item.order_id}`}
+                      className='rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#7c3aed]/20'
+                    >
+                      View detail
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   )

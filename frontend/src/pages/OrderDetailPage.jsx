@@ -164,9 +164,25 @@ export default function OrderDetailPage() {
                   className='rounded-xl border border-white/10 bg-[#0f172a]/60 p-4'
                 >
                   <div className='flex items-start justify-between gap-4'>
-                    <div className='min-w-0'>
+                    <div className='flex min-w-0 items-start gap-3'>
+                      {item_data.image ? (
+                        <img
+                          src={item_data.image}
+                          alt={item_data.variant_name || item_data.product_name}
+                          className='h-14 w-14 rounded-lg border border-white/10 object-cover'
+                        />
+                      ) : (
+                        <div className='flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-[#111827] text-[10px] text-[#94a3b8]'>
+                          No image
+                        </div>
+                      )}
+
+                      <div className='min-w-0'>
                       <p className='truncate text-sm font-semibold text-white'>
                         {item_data.product_name}
+                      </p>
+                      <p className='mt-1 text-xs text-[#cbd5e1]'>
+                        {item_data.variant_name || `Variant #${item_data.variant_id}`}
                       </p>
                       <p className='mt-1 text-xs text-[#94a3b8]'>
                         Qty: {item_data.quantity}
@@ -174,6 +190,7 @@ export default function OrderDetailPage() {
                       <p className='mt-1 text-xs text-[#94a3b8]'>
                         Unit: {formatVnd(item_data.price)}
                       </p>
+                    </div>
                     </div>
                     <p className='text-sm font-semibold text-[#e2e8f0]'>
                       {formatVnd(item_data.subtotal)}

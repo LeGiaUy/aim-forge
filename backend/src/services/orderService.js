@@ -2,6 +2,39 @@ import { z } from "zod";
 import { prisma } from "../config/db.js";
 import { getFinalPrice } from "./pricing.service.js";
 
+const normalizeSkuForDisplay = (raw_sku) => {
+  const sku_text = raw_sku?.trim()
+  if (!sku_text) {
+    return null
+  }
+
+  const archived_token_index = sku_text.indexOf('-del-')
+  if (archived_token_index <= 0) {
+    return sku_text
+  }
+
+  return sku_text.slice(0, archived_token_index)
+}
+
+const buildVariantName = (variant_data) => {
+  const color_text = variant_data?.color?.trim();
+  const sku_text = normalizeSkuForDisplay(variant_data?.sku);
+
+  if (color_text && sku_text) {
+    return `${color_text} - ${sku_text}`;
+  }
+
+  if (color_text) {
+    return color_text;
+  }
+
+  if (sku_text) {
+    return sku_text;
+  }
+
+  return "Default variant";
+};
+
 const createOrderSchema = z.object({
   address: z.string().min(5),
 });
@@ -117,6 +150,9 @@ export const getOrders = async (userId) => {
     items: o.items.map((i) => ({
       variant_id: i.variant_id,
       product_name: i.variant.product.name,
+      variant_name: buildVariantName(i.variant),
+      variant_color: i.variant.color || null,
+      variant_sku: i.variant.sku || null,
       image: i.variant.images[0]?.image_url || null,
       quantity: i.quantity,
       price: Number(i.price),
@@ -158,6 +194,9 @@ export const getOrderById = async (userId, orderId) => {
     items: order.items.map((i) => ({
       variant_id: i.variant_id,
       product_name: i.variant.product.name,
+      variant_name: buildVariantName(i.variant),
+      variant_color: i.variant.color || null,
+      variant_sku: i.variant.sku || null,
       brand: i.variant.product.brand?.name || null,
       image: i.variant.images[0]?.image_url || null,
       attributes: i.variant.color
