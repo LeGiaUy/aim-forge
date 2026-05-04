@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
@@ -42,15 +42,19 @@ function ImageFallback({ name }) {
 export default function ProductCard({ product, index = 0 }) {
   const { is_authenticated } = useAuth()
   const { addToCart } = useCart()
-  const [imgError, setImgError] = useState(false)
-  const [added, setAdded] = useState(false)
-
   const {
     product_id,
     name,
     brand,
     representative_variant
   } = product
+  const [imgError, setImgError] = useState(false)
+  const [brand_badge_img_failed, setBrandBadgeImgFailed] = useState(false)
+  const [added, setAdded] = useState(false)
+
+  useEffect(() => {
+    setBrandBadgeImgFailed(false)
+  }, [product_id])
 
   const original_price = product.price ?? null
   const final_price =
@@ -116,10 +120,18 @@ export default function ProductCard({ product, index = 0 }) {
 
           {brand && (
             <div
-              className='absolute top-3 left-3 px-2.5 py-1 rounded text-[10px] font-display font-bold uppercase tracking-wider'
+              className='absolute left-3 top-3 flex max-w-[min(11rem,calc(100%-5rem))] items-center gap-1.5 rounded px-2 py-1 text-[10px] font-display font-bold uppercase tracking-wider'
               style={{ background: 'rgba(10,10,15,0.85)', color: '#9f67ff', border: '1px solid rgba(124,58,237,0.3)' }}
             >
-              {brand.name}
+              {brand.image_url && !brand_badge_img_failed && (
+                <img
+                  src={brand.image_url}
+                  alt=''
+                  className='h-4 w-4 shrink-0 object-contain sm:h-5 sm:w-5'
+                  onError={() => setBrandBadgeImgFailed(true)}
+                />
+              )}
+              <span className='min-w-0 truncate'>{brand.name}</span>
             </div>
           )}
 

@@ -49,8 +49,32 @@ const variantInclude = {
   },
 };
 
+/** Parse số không âm từ query; null nếu không hợp lệ */
+const parse_non_negative = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+};
+
+/** sort: newest | price_asc | price_desc */
+const build_order_by = (sort) => {
+  const s = String(sort || "").toLowerCase();
+  if (s === "price_asc") return { price: "asc" };
+  if (s === "price_desc") return { price: "desc" };
+  return { product_id: "desc" };
+};
+
 // Build where clause from query filters
-const buildWhere = ({ category_id, brand_id, search }) => {
+const build_where = (filters = {}) => {
+  const {
+    category_id,
+    brand_id,
+    search,
+    min_price,
+    max_price,
+    in_stock,
+  } = filters;
+
   const where = { is_active: true };
 
   if (category_id) where.category_id = Number(category_id);
@@ -58,6 +82,28 @@ const buildWhere = ({ category_id, brand_id, search }) => {
 
   if (search) {
     where.name = { contains: search, mode: "insensitive" };
+  }
+
+  const min_p = parse_non_negative(min_price);
+  const max_p = parse_non_negative(max_price);
+  if (min_p !== null || max_p !== null) {
+    where.price = {};
+    if (min_p !== null) where.price.gte = min_p;
+    if (max_p !== null) where.price.lte = max_p;
+  }
+
+  const stock_only =
+    in_stock === true ||
+    in_stock === "true" ||
+    in_stock === "1" ||
+    in_stock === 1;
+  if (stock_only) {
+    where.variants = {
+      some: {
+        is_active: true,
+        stock: { gt: 0 },
+      },
+    };
   }
 
   return where;
@@ -86,9 +132,19 @@ const formatProductList = (product) => {
     product_id: product.product_id,
     name: product.name,
     description: product.description,
-    brand: product.brand ? { brand_id: product.brand.brand_id, name: product.brand.name } : null,
+    brand: product.brand
+      ? {
+          brand_id: product.brand.brand_id,
+          name: product.brand.name,
+          image_url: product.brand.image_url ?? null,
+        }
+      : null,
     category: product.category
-      ? { category_id: product.category.category_id, name: product.category.name }
+      ? {
+          category_id: product.category.category_id,
+          name: product.category.name,
+          image_url: product.category.image_url ?? null,
+        }
       : null,
     price: pricing.price,
     final_price: pricing.final_price,
@@ -138,8 +194,9 @@ const validateProductAttributes = async (categoryId, specs) => {
 // ─── Service methods ─────────────────────────────────────────────────────────
 
 export const getProducts = async (filters = {}) => {
-  const { page = 1, limit = 10 } = filters;
-  const where = buildWhere(filters);
+  const { page = 1, limit = 10, sort } = filters;
+  const where = build_where(filters);
+  const order_by = build_order_by(sort);
   const skip = (Number(page) - 1) * Number(limit);
 
   const [total, products] = await Promise.all([
@@ -158,7 +215,7 @@ export const getProducts = async (filters = {}) => {
           },
         },
       },
-      orderBy: { product_id: "desc" },
+      orderBy: order_by,
     })
   ]);
 

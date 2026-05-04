@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import SectionWrapper from "./SectionWrapper.jsx";
 import { useCategories } from "../hooks/useCategories.js";
@@ -62,13 +63,16 @@ function CategorySkeleton() {
 }
 
 function CategoryCard({ category, index }) {
+  const [img_error, setImgError] = useState(false);
   const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
   const icon  = CATEGORY_ICONS[category.name] || CATEGORY_ICONS["Controller"];
+  const image_url = category.image_url?.trim();
+  const show_image = Boolean(image_url) && !img_error;
 
   return (
     <Link
       to={`/shop?category=${category.category_id}`}
-      className="group flex flex-col items-center justify-center gap-4 p-6 rounded-xl cursor-pointer
+      className="group relative flex flex-col items-center justify-center gap-4 p-6 rounded-xl cursor-pointer
                  transition-all duration-300 hover:-translate-y-2 animate-gridFade"
       style={{
         background: color.bg,
@@ -78,10 +82,19 @@ function CategoryCard({ category, index }) {
       aria-label={`Browse ${category.name}`}
     >
       <div
-        className="transition-all duration-300 group-hover:scale-110"
+        className="flex h-16 w-16 items-center justify-center transition-all duration-300 group-hover:scale-110"
         style={{ color: color.text, filter: `drop-shadow(0 0 8px ${color.text}80)` }}
       >
-        {icon}
+        {show_image ? (
+          <img
+            src={image_url}
+            alt={category.name}
+            className="max-h-full max-w-full object-contain"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          icon
+        )}
       </div>
       <span
         className="font-display text-xs font-semibold uppercase tracking-widest text-center"

@@ -1,8 +1,13 @@
+import { useState } from "react";
 import SectionWrapper from "./SectionWrapper.jsx";
 import { useBrands } from "../hooks/useCategories.js";
 
 // Generate initials from brand name as fallback
 function BrandLogo({ brand }) {
+  const [img_error, setImgError] = useState(false);
+  const image_url = brand.image_url?.trim();
+  const show_image = Boolean(image_url) && !img_error;
+
   const initials = brand.name
     .split(" ")
     .map((w) => w[0])
@@ -19,15 +24,24 @@ function BrandLogo({ brand }) {
         border: "1px solid rgba(30,30,46,0.8)",
       }}
     >
-      <div className="flex flex-col items-center gap-2">
-        <span
-          className="font-display text-2xl font-black tracking-widest
-                     text-[#334155] group-hover:text-[#7c3aed] transition-colors duration-300"
-          style={{ filter: "none" }}
-        >
-          {initials}
-        </span>
-        <span className="text-[10px] font-display font-semibold uppercase tracking-wider text-[#475569] group-hover:text-[#64748b] transition-colors">
+      <div className="flex flex-col items-center justify-center gap-2 px-2">
+        {show_image ? (
+          <img
+            src={image_url}
+            alt={brand.name}
+            className="max-h-12 w-full max-w-36 object-contain"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <span
+            className="font-display text-2xl font-black tracking-widest
+                       text-[#334155] group-hover:text-[#7c3aed] transition-colors duration-300"
+            style={{ filter: "none" }}
+          >
+            {initials}
+          </span>
+        )}
+        <span className="text-[10px] font-display font-semibold uppercase tracking-wider text-[#475569] group-hover:text-[#64748b] transition-colors text-center line-clamp-2">
           {brand.name}
         </span>
       </div>

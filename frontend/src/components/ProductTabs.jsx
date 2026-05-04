@@ -33,7 +33,7 @@ export default function ProductTabs({ description, specs }) {
       </div>
 
       {active_tab === 'description' && (
-        <p className='pt-4 text-sm leading-7 text-[#cbd5e1]'>
+        <p className='whitespace-pre-line pt-4 text-sm leading-7 text-[#cbd5e1]'>
           {description || 'No detailed description available'}
         </p>
       )}
@@ -51,12 +51,14 @@ export default function ProductTabs({ description, specs }) {
               {specs.map(item => (
                 <div
                   key={`${item.attribute}-${item.value}`}
-                  className='grid grid-cols-2 border-b border-white/10 bg-black/20 px-4 py-3 text-sm last:border-b-0'
+                  className='grid grid-cols-2 items-start border-b border-white/10 bg-black/20 px-4 py-3 text-sm last:border-b-0'
                 >
                   <span className='font-semibold text-[#e2e8f0]'>
                     {item.attribute}
                   </span>
-                  <span className='text-[#94a3b8]'>{item.value}</span>
+                  <span className='whitespace-pre-line text-[#94a3b8]'>
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
