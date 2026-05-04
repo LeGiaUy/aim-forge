@@ -13,8 +13,9 @@ const FEATURES = [
         <line x1="38" y1="24" x2="44" y2="24" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
-    title: "Pro Esports Grade",
-    description: "Every product is tested and validated by professional FPS players at tournament level.",
+    title: "Đẳng cấp esports",
+    description:
+      "Mỗi sản phẩm đều được test và thẩm định bởi game thủ FPS chuyên nghiệp ở cấp giải đấu.",
     color: "#7c3aed",
   },
   {
@@ -25,8 +26,9 @@ const FEATURES = [
         <circle cx="24" cy="24" r="3" fill="currentColor"/>
       </svg>
     ),
-    title: "Sub-1ms Response",
-    description: "Lightning-fast polling rates and zero-latency wireless for when every millisecond counts.",
+    title: "Phản hồi dưới 1ms",
+    description:
+      "Tốc độ lấy mẫu cực cao và không dây độ trễ thấp — mỗi mili giây đều quan trọng.",
     color: "#06b6d4",
   },
   {
@@ -36,8 +38,9 @@ const FEATURES = [
         <path d="M16 24L22 30L34 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "FPS Optimized",
-    description: "Specifically engineered for first-person shooters — from sensor precision to ergonomic design.",
+    title: "Tối ưu cho FPS",
+    description:
+      "Thiết kế riêng cho game bắn súng góc nhìn thứ nhất — từ cảm biến đến công thái học.",
     color: "#ef4444",
   },
   {
@@ -47,8 +50,9 @@ const FEATURES = [
         <path d="M24 14L27 20L34 21L29 26L30 33L24 30L18 33L19 26L14 21L21 20L24 14Z" fill="currentColor" opacity="0.3"/>
       </svg>
     ),
-    title: "Trusted by Champions",
-    description: "Used by top-ranked competitive players in Valorant, CS2, Overwatch, and Apex Legends.",
+    title: "Được vận động viên tin dùng",
+    description:
+      "Được các game thủ hạng cao sử dụng trong Valorant, CS2, Overwatch và Apex Legends.",
     color: "#eab308",
   },
 ];
@@ -57,8 +61,8 @@ export default function WhyAimForge() {
   return (
     <SectionWrapper
       id="why-aimforge"
-      title="Why AimForge?"
-      subtitle="Built different — for players who refuse to lose"
+      title="Vì sao chọn AimForge?"
+      subtitle="Khác biệt — dành cho người chơi không chấp nhận thua"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
         {FEATURES.map((feature, i) => (

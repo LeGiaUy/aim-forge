@@ -45,7 +45,7 @@ export default function CTABanner() {
         <h2
           className="font-display font-black uppercase tracking-wider text-4xl md:text-5xl leading-tight"
         >
-          <span className="text-white">Upgrade Your</span>{" "}
+          <span className="text-white">Nâng cấp</span>{" "}
           <span
             style={{
               background: "linear-gradient(90deg, #7c3aed, #06b6d4)",
@@ -54,24 +54,24 @@ export default function CTABanner() {
               backgroundClip: "text",
             }}
           >
-            Aim
+            aim
           </span>{" "}
-          <span className="text-white">Today</span>
+          <span className="text-white">của bạn hôm nay</span>
         </h2>
 
         <p className="mt-5 text-[#94a3b8] text-lg font-body max-w-lg mx-auto leading-relaxed">
-          Join thousands of competitive players who trust AimForge for their gaming arsenal.
+          Cùng hàng nghìn game thủ cạnh tranh tin chọn AimForge cho bộ gear của họ.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link to="/shop" className="btn-primary" id="cta-shop-now">
+          <Link to="/chuot" className="btn-primary" id="cta-shop-now">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-            Shop Now
+            Mua ngay
           </Link>
           <a href="#featured-products" className="btn-outline" id="cta-browse-gear">
-            Browse Gear
+            Xem thiết bị
           </a>
         </div>
       </div>

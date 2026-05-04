@@ -136,20 +136,9 @@ export default function Hero() {
       ))}
 
       {/* Hero content */}
-      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto my-20">
         {/* Badge */}
-        <div
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-widest animate-fadeInUp"
-          style={{
-            background: "rgba(124,58,237,0.12)",
-            border: "1px solid rgba(124,58,237,0.3)",
-            color: "#9f67ff",
-            animationDelay: "0s",
-          }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed] animate-pulse" />
-          Pro-Grade FPS Equipment
-        </div>
+       
 
         {/* Main heading */}
         <h1
@@ -209,14 +198,14 @@ export default function Hero() {
           className="mt-12 flex flex-wrap justify-center gap-4 animate-fadeInUp"
           style={{ animationDelay: "0.4s" }}
         >
-          <Link to="/shop" className="btn-primary" id="hero-shop-now">
+          <Link to="/chuot" className="btn-primary" id="hero-shop-now">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-            Shop Now
+            Mua ngay
           </Link>
           <a href="#featured-products" className="btn-outline" id="hero-explore-gear">
-            Explore Gear
+            Xem sản phẩm
           </a>
         </div>
 

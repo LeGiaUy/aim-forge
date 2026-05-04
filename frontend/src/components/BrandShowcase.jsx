@@ -73,8 +73,8 @@ export default function BrandShowcase() {
   return (
     <SectionWrapper
       id="brands"
-      title="Trusted Brands"
-      subtitle="We partner with the best in competitive gaming"
+      title="Thương hiệu đồng hành"
+      subtitle="Hợp tác cùng các tên tuổi hàng đầu trong esports"
     >
       {loading && <BrandSkeleton />}
       {!loading && brands.length > 0 && (

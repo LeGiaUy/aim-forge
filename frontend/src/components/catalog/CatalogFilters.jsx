@@ -125,7 +125,7 @@ export default function CatalogFilters({
           className='rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm
             text-slate-300 transition hover:border-violet-500/30 hover:text-white'
         >
-          Xóa bộ lọc
+          Xóa bộ lọc và tìm kiếm
         </button>
       </div>
     </section>

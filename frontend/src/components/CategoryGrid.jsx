@@ -79,7 +79,7 @@ function CategoryCard({ category, index }) {
         border: `1px solid ${color.border}`,
         animationDelay: `${index * 0.08}s`,
       }}
-      aria-label={`Browse ${category.name}`}
+      aria-label={`Xem danh mục ${category.name}`}
     >
       <div
         className="flex h-16 w-16 items-center justify-center transition-all duration-300 group-hover:scale-110"
@@ -118,13 +118,13 @@ export default function CategoryGrid() {
   return (
     <SectionWrapper
       id="categories"
-      title="Shop by Category"
-      subtitle="Find the perfect gear for your playstyle"
+      title="Mua theo danh mục"
+      subtitle="Chọn gear phù hợp phong cách chơi của bạn"
     >
       {loading && <CategorySkeleton />}
       {error && (
         <p className="text-[#ef4444] text-sm font-body">
-          Failed to load categories: {error}
+          Không tải được danh mục: {error}
         </p>
       )}
       {!loading && !error && (
@@ -136,7 +136,7 @@ export default function CategoryGrid() {
           ))}
           {/* Fallback static cards if API returns fewer than 5 */}
           {categories.length === 0 && (
-            <p className="col-span-full text-[#64748b] text-sm">No categories found.</p>
+            <p className="col-span-full text-[#64748b] text-sm">Chưa có danh mục.</p>
           )}
         </div>
       )}

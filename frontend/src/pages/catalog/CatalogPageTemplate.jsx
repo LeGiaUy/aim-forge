@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import CatalogFilters from '../../components/catalog/CatalogFilters.jsx'
 import ProductCard from '../../components/ProductCard.jsx'
 import api from '../../services/api.js'
@@ -45,6 +46,16 @@ export default function CatalogPageTemplate({
   const [max_price, setMaxPrice] = useState('')
   const [sort, setSort] = useState('newest')
   const [in_stock, setInStock] = useState(false)
+  const [search_text, setSearchText] = useState('')
+  const [search_debounced, setSearchDebounced] = useState('')
+
+  const [search_params, set_search_params] = useSearchParams()
+  const q_from_url = search_params.get('q') ?? ''
+
+  useEffect(() => {
+    setSearchText(q_from_url)
+    setSearchDebounced(q_from_url)
+  }, [q_from_url])
 
   const resolved_category_id = useMemo(() => {
     if (!category_keyword || category_list.length === 0) return null
@@ -54,6 +65,20 @@ export default function CatalogPageTemplate({
     )
     return matched?.category_id ?? null
   }, [category_keyword, category_list])
+
+  const effective_search = useMemo(() => {
+    const user_q = search_debounced.trim()
+    if (user_q) return user_q
+    if (resolved_category_id) return undefined
+    return search_keyword || undefined
+  }, [search_debounced, resolved_category_id, search_keyword])
+
+  useEffect(() => {
+    const timer_id = setTimeout(() => {
+      setSearchDebounced(search_text)
+    }, 400)
+    return () => clearTimeout(timer_id)
+  }, [search_text])
 
   useEffect(() => {
     let cancel = false
@@ -104,7 +129,7 @@ export default function CatalogPageTemplate({
 
       const params = {
         category_id: category_id || undefined,
-        search: category_id ? undefined : search_keyword,
+        search: effective_search,
         brand_id: brand_id || undefined,
         min_price: min_n !== null ? min_n : undefined,
         max_price: max_n !== null ? max_n : undefined,
@@ -129,7 +154,7 @@ export default function CatalogPageTemplate({
         }
       } catch (error_value) {
         if (!is_cancelled) {
-          setErrorMessage(error_value.message || 'Failed to load products')
+          setErrorMessage(error_value.message || 'Không tải được sản phẩm')
           setProductList([])
           setResultTotal(0)
         }
@@ -147,11 +172,11 @@ export default function CatalogPageTemplate({
     }
   }, [
     brand_id,
+    effective_search,
     in_stock,
     max_price,
     min_price,
     resolved_category_id,
-    search_keyword,
     sort
   ])
 
@@ -161,6 +186,16 @@ export default function CatalogPageTemplate({
     setMaxPrice('')
     setSort('newest')
     setInStock(false)
+    setSearchText('')
+    setSearchDebounced('')
+    set_search_params(
+      prev => {
+        const next = new URLSearchParams(prev)
+        next.delete('q')
+        return next
+      },
+      { replace: true }
+    )
   }
 
   return (
@@ -204,7 +239,9 @@ export default function CatalogPageTemplate({
 
           {!is_loading && !error_message && product_list.length === 0 && (
             <p className='rounded-xl border border-white/10 bg-[#0f0f1a] p-4 text-sm text-slate-300'>
-              Chưa có sản phẩm phù hợp trong danh mục này.
+              {search_debounced.trim()
+                ? 'Không tìm thấy sản phẩm phù hợp với từ khóa và bộ lọc.'
+                : 'Không có sản phẩm phù hợp trong danh mục này.'}
             </p>
           )}
 

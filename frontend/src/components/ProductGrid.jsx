@@ -35,7 +35,7 @@ function ErrorState({ message }) {
         onClick={() => window.location.reload()}
         className="mt-4 btn-outline text-xs py-2 px-4"
       >
-        Retry
+        Thử lại
       </button>
     </div>
   );
@@ -48,7 +48,7 @@ function EmptyState() {
         <rect x="2" y="3" width="20" height="18" rx="2"/>
         <line x1="8" y1="12" x2="16" y2="12"/>
       </svg>
-      <p className="mt-4 text-[#64748b] text-sm font-body">No products available yet.</p>
+      <p className="mt-4 text-[#64748b] text-sm font-body">Chưa có sản phẩm.</p>
     </div>
   );
 }
@@ -59,11 +59,11 @@ export default function ProductGrid() {
   return (
     <SectionWrapper
       id="featured-products"
-      title="Featured Gear"
-      subtitle="Top-tier equipment trusted by professional FPS players worldwide"
+      title="Sản phẩm nổi bật"
+      subtitle="Thiết bị hàng đầu được game thủ FPS chuyên nghiệp tin dùng"
     >
       {loading && <ProductSkeleton />}
-      {error && <ErrorState message={`Failed to load products: ${error}`} />}
+      {error && <ErrorState message={`Không tải được sản phẩm: ${error}`} />}
       {!loading && !error && products.length === 0 && <EmptyState />}
       {!loading && !error && products.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">

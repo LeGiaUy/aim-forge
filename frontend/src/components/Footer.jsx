@@ -21,21 +21,26 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-[#64748b] text-sm font-body leading-relaxed">
-              Precision gaming gear for competitive FPS players. Built for speed, accuracy, and victory.
+              Phụ kiện gaming chính xác cho game thủ FPS cạnh tranh — tốc độ, độ chính xác và chiến thắng.
             </p>
           </div>
 
           {/* Shop */}
           <div>
-            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Shop</h4>
+            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Cửa hàng</h4>
             <ul className="space-y-2.5 list-none m-0 p-0">
-              {["Gaming Mice", "Keyboards", "Headsets", "Mousepads", "Bundles"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Chuột gaming", to: "/chuot" },
+                { label: "Bàn phím", to: "/ban-phim" },
+                { label: "Lót chuột", to: "/lot-chuot" },
+                { label: "Phụ kiện", to: "/phu-kien" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    to="/shop"
+                    to={item.to}
                     className="text-[#64748b] hover:text-[#9f67ff] text-sm font-body transition-colors duration-200"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -44,9 +49,9 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Company</h4>
+            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Công ty</h4>
             <ul className="space-y-2.5 list-none m-0 p-0">
-              {["About Us", "Careers", "Pro Players", "Sponsorship", "Press"].map((item) => (
+              {["Giới thiệu", "Tuyển dụng", "Đội Pro", "Tài trợ", "Báo chí"].map((item) => (
                 <li key={item}>
                   <Link
                     to="/"
@@ -61,9 +66,9 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Support</h4>
+            <h4 className="font-display text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Hỗ trợ</h4>
             <ul className="space-y-2.5 list-none m-0 p-0">
-              {["Help Center", "Shipping", "Returns", "Warranty", "Contact"].map((item) => (
+              {["Trợ giúp", "Vận chuyển", "Đổi trả", "Bảo hành", "Liên hệ"].map((item) => (
                 <li key={item}>
                   <Link
                     to="/"
@@ -80,10 +85,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-14 pt-6 border-t border-[#1e1e2e] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#334155] text-xs font-body">
-            © 2026 AimForge. All rights reserved.
+            © 2026 AimForge. Bảo lưu mọi quyền.
           </p>
           <div className="flex items-center gap-6">
-            {["Privacy", "Terms", "Cookies"].map((item) => (
+            {["Quyền riêng tư", "Điều khoản", "Cookie"].map((item) => (
               <Link
                 key={item}
                 to="/"

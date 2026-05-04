@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
 
@@ -40,13 +40,39 @@ const navLinks = [
   }
 ]
 
+const IS_CATALOG_PATH = /^\/(chuot|ban-phim|lot-chuot|phu-kien)(\/|$)/
+
+const NavSearchIcon = () => (
+  <svg
+    className='h-3.5 w-3.5'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    aria-hidden='true'
+  >
+    <circle cx='11' cy='11' r='7' />
+    <path d='M21 21l-4.35-4.35' />
+  </svg>
+)
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobile_submenu_open, setMobileSubmenuOpen] = useState(false)
+  const [search_draft, setSearchDraft] = useState('')
   const location = useLocation()
+  const navigate = useNavigate()
+  const [search_params] = useSearchParams()
   const { user, is_authenticated, logout } = useAuth()
   const { total_items } = useCart()
+
+  const q_in_url = search_params.get('q') ?? ''
+
+  useEffect(() => {
+    setSearchDraft(q_in_url)
+  }, [q_in_url, location.pathname])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -57,6 +83,24 @@ export default function Navbar() {
   const closeMenu = () => {
     setMenuOpen(false)
     setMobileSubmenuOpen(false)
+  }
+
+  const submit_nav_search = e => {
+    e.preventDefault()
+    const q = search_draft.trim()
+    const path = location.pathname
+    if (IS_CATALOG_PATH.test(path)) {
+      if (q) {
+        navigate(`${path}?q=${encodeURIComponent(q)}`, { replace: true })
+      } else {
+        navigate(path, { replace: true })
+      }
+    } else if (q) {
+      navigate(`/tim-kiem?q=${encodeURIComponent(q)}`, { replace: true })
+    } else {
+      navigate('/tim-kiem', { replace: true })
+    }
+    closeMenu()
   }
 
   return (
@@ -146,12 +190,33 @@ export default function Navbar() {
           })}
         </ul>
 
-        {/* Actions */}
-        <div className='hidden items-center gap-4 md:flex'>
+        {/* Actions: tìm kiếm (trái) + giỏ + đăng nhập */}
+        <div className='hidden min-w-0 items-center gap-3 md:flex'>
+          <form
+            onSubmit={submit_nav_search}
+            className='relative w-full min-w-[9rem] max-w-[14rem] shrink'
+            role='search'
+          >
+            <label className='sr-only' htmlFor='nav-search'>
+              Tìm sản phẩm
+            </label>
+            <span className='pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[#64748b]'>
+              <NavSearchIcon />
+            </span>
+            <input
+              id='nav-search'
+              type='search'
+              value={search_draft}
+              onChange={e => setSearchDraft(e.target.value)}
+              placeholder='Tìm sản phẩm…'
+              autoComplete='off'
+              className='h-9 w-full rounded-lg border border-white/10 bg-black/30 py-1.5 pl-8 pr-2 text-xs text-slate-200 placeholder:text-[#64748b] focus:border-violet-500/40 focus:outline-none focus:ring-1 focus:ring-violet-500/20'
+            />
+          </form>
           <Link
             to='/cart'
             aria-label='Cart'
-            className='relative cursor-pointer text-[#94a3b8] transition-colors hover:text-[#06b6d4]'
+            className='relative shrink-0 cursor-pointer text-[#94a3b8] transition-colors hover:text-[#06b6d4]'
           >
             <CartIcon />
             <span className='absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#7c3aed] text-[9px] font-bold text-white'>
@@ -169,7 +234,7 @@ export default function Navbar() {
             <>
               <Link
                 to='/profile'
-                className='flex items-center gap-2 rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#d8b4fe] transition hover:border-cyan-400/50 hover:text-cyan-200'
+                className='flex h-10 items-center gap-2 rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 text-xs font-semibold uppercase tracking-wider text-[#d8b4fe] transition hover:border-cyan-400/50 hover:text-cyan-200'
               >
                 {user?.avatar ? (
                   <img
@@ -187,9 +252,9 @@ export default function Navbar() {
               <button
                 type='button'
                 onClick={logout}
-                className='rounded-lg border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-red-300 transition hover:bg-red-500/20'
+                className='inline-flex h-10 shrink-0 items-center justify-center rounded-lg border border-red-400/40 bg-red-500/10 px-3 text-xs font-semibold uppercase tracking-wider text-red-300 transition hover:bg-red-500/20'
               >
-                Logout
+                Đăng xuất
               </button>
             </>
           )}
@@ -221,6 +286,27 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className='flex flex-col gap-4 border-t border-[#1e1e2e] bg-[#0f0f1a]/95 px-6 py-6 backdrop-blur-xl md:hidden'>
+          <form
+            onSubmit={submit_nav_search}
+            className='relative w-full'
+            role='search'
+          >
+            <label className='sr-only' htmlFor='nav-search-mobile'>
+              Tìm sản phẩm
+            </label>
+            <span className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b]'>
+              <NavSearchIcon />
+            </span>
+            <input
+              id='nav-search-mobile'
+              type='search'
+              value={search_draft}
+              onChange={e => setSearchDraft(e.target.value)}
+              placeholder='Tìm sản phẩm…'
+              autoComplete='off'
+              className='h-10 w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-slate-200 placeholder:text-[#64748b] focus:border-violet-500/40 focus:outline-none'
+            />
+          </form>
           {navLinks.map(link_item => {
             if (!link_item.children) {
               return (
@@ -299,16 +385,16 @@ export default function Navbar() {
                 <Link
                   to='/profile'
                   onClick={closeMenu}
-                  className='w-full rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#d8b4fe]'
+                  className='flex h-11 w-full items-center justify-center rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-4 text-center text-xs font-semibold uppercase tracking-wider text-[#d8b4fe]'
                 >
                   Profile
                 </Link>
                 <button
                   type='button'
                   onClick={logout}
-                  className='w-full rounded-lg border border-red-400/40 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-red-300'
+                  className='inline-flex h-11 w-full items-center justify-center rounded-lg border border-red-400/40 bg-red-500/10 px-4 text-xs font-semibold uppercase tracking-wider text-red-300'
                 >
-                  Logout
+                  Đăng xuất
                 </button>
               </>
             )}

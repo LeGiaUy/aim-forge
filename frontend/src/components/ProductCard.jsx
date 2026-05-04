@@ -114,7 +114,7 @@ export default function ProductCard({ product, index = 0 }) {
               className='flex items-center gap-2 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-wider text-white'
               style={{ background: 'rgba(10,10,15,0.85)', border: '1px solid rgba(124,58,237,0.4)' }}
             >
-              <EyeIcon /> Quick View
+              <EyeIcon /> Xem nhanh
             </span>
           </div>
 
@@ -139,7 +139,7 @@ export default function ProductCard({ product, index = 0 }) {
             <div className="absolute top-3 right-3 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] text-emerald-400 font-display font-semibold uppercase tracking-wider">
-                In Stock
+                Còn hàng
               </span>
             </div>
           )}
@@ -186,7 +186,7 @@ export default function ProductCard({ product, index = 0 }) {
           <button
             id={`add-to-cart-${product_id}`}
             onClick={handleAddToCart}
-            aria-label={`Add ${name} to cart`}
+            aria-label={`Thêm ${name} vào giỏ`}
             className={`flex shrink-0 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-display font-semibold
                         uppercase tracking-wider transition-all duration-200 cursor-pointer
                         ${!is_authenticated || out_of_stock
@@ -202,12 +202,14 @@ export default function ProductCard({ product, index = 0 }) {
                 <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' aria-hidden='true'>
                   <polyline points='20 6 9 17 4 12' />
                 </svg>
-                Added
+                Đã thêm
               </>
             ) : (
               <>
                 <CartPlusIcon />
-                {is_authenticated ? (out_of_stock ? 'Out' : 'Add') : 'Login'}
+                {is_authenticated
+                  ? (out_of_stock ? 'Hết' : 'Thêm')
+                  : 'Đăng nhập'}
               </>
             )}
           </button>

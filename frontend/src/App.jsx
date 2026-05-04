@@ -30,6 +30,7 @@ import KeycapPage from './pages/catalog/KeycapPage.jsx'
 import MouseFeetPage from './pages/catalog/MouseFeetPage.jsx'
 import MousepadPage from './pages/catalog/MousepadPage.jsx'
 import MousePage from './pages/catalog/MousePage.jsx'
+import SearchResultsPage from './pages/catalog/SearchResultsPage.jsx'
 
 function App() {
   const location = useLocation()
@@ -43,7 +44,9 @@ function App() {
       <div className='flex-1'>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Navigate to="/chuot" replace />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path='/tim-kiem' element={<SearchResultsPage />} />
           <Route path='/chuot' element={<MousePage />} />
           <Route path='/ban-phim' element={<KeyboardPage />} />
           <Route path='/lot-chuot' element={<MousepadPage />} />
