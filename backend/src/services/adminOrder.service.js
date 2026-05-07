@@ -59,6 +59,15 @@ const getAllowedTransitions = (current_status, payment_method) => {
   return []
 }
 
+const admin_variant_include = {
+  product: true,
+  variant_option_values: {
+    include: {
+      option_value: { include: { option: true } }
+    }
+  }
+}
+
 const reduceStockAtProcessing = async (tx, items_data) => {
   for (const item_data of items_data) {
     const update_result = await tx.productVariant.updateMany({
@@ -112,9 +121,7 @@ export const getAdminOrders = async query_data => {
         items: {
           include: {
             variant: {
-              include: {
-                product: true
-              }
+              include: admin_variant_include
             }
           }
         },
@@ -151,9 +158,7 @@ export const getAdminOrderById = async order_id => {
       items: {
         include: {
           variant: {
-            include: {
-              product: true
-            }
+            include: admin_variant_include
           }
         }
       },

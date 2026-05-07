@@ -61,6 +61,32 @@ async function mapAdminPermissions(admin_role, permissions) {
   )
 }
 
+/**
+ * Danh mục / thương hiệu mẫu — chỉ khi bảng trống (sau migrate reset).
+ * Tránh mọi SP cùng category_id = 1 vì chỉ có một dòng “tạm”.
+ */
+async function seedCatalogIfEmpty() {
+  const cat_count = await prisma.category.count()
+  if (cat_count === 0) {
+    await prisma.$transaction([
+      prisma.category.create({ data: { name: 'Chuột' } }),
+      prisma.category.create({ data: { name: 'Lót chuột' } }),
+      prisma.category.create({ data: { name: 'Phụ kiện' } })
+    ])
+    console.log('Seeded default categories: Chuột, Lót chuột, Phụ kiện')
+  }
+
+  const brand_count = await prisma.brand.count()
+  if (brand_count === 0) {
+    await prisma.$transaction([
+      prisma.brand.create({ data: { name: 'Lamzu', country: 'CN' } }),
+      prisma.brand.create({ data: { name: 'Razer', country: 'US' } }),
+      prisma.brand.create({ data: { name: 'Pulsar', country: 'KR' } })
+    ])
+    console.log('Seeded sample brands: Lamzu, Razer, Pulsar')
+  }
+}
+
 async function createUsers({ admin_role, user_role }) {
   const admin_password = await bcrypt.hash('admin123', 12)
   const user_password = await bcrypt.hash('user123', 12)
@@ -96,6 +122,7 @@ async function main() {
   const permissions = await createPermissions()
   await mapAdminPermissions(role_data.admin_role, permissions)
   await createUsers(role_data)
+  await seedCatalogIfEmpty()
 
   console.log('Seed completed')
   console.log('Admin: admin@aimforge.gg / admin123')

@@ -7,7 +7,7 @@ export default function RelatedProducts({ products }) {
   return (
     <section className='space-y-4'>
       <h2 className='font-display text-xl font-bold uppercase tracking-wider text-white'>
-        Related products
+        Sản phẩm liên quan
       </h2>
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>

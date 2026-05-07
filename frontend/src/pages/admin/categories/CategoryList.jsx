@@ -39,7 +39,7 @@ export default function CategoryList() {
       setForm({ name: '', image_url: '' })
       fetchCategories()
     } catch (err) {
-      alert(err.message || 'Failed to create category')
+      alert(err.message || 'Không thể tạo danh mục')
     } finally {
       setSubmitting(false)
     }
@@ -58,21 +58,21 @@ export default function CategoryList() {
       setEditingForm({ name: '', image_url: '' })
       fetchCategories()
     } catch (err) {
-      alert(err.message || 'Failed to update category')
+      alert(err.message || 'Không thể cập nhật danh mục')
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async category_id => {
-    if (!window.confirm('Delete this category?')) return
+    if (!window.confirm('Bạn có chắc muốn xóa danh mục này?')) return
 
     try {
       setSubmitting(true)
       await adminCategoryApi.delete(category_id)
       fetchCategories()
     } catch (err) {
-      alert(err.message || 'Failed to delete category')
+      alert(err.message || 'Không thể xóa danh mục')
     } finally {
       setSubmitting(false)
     }
@@ -90,7 +90,7 @@ export default function CategoryList() {
       const image_url = response.data.data?.image_urls?.[0] || ''
       setForm(prev => ({ ...prev, image_url }))
     } catch (err) {
-      alert(err.message || 'Failed to upload category image')
+      alert(err.message || 'Không thể tải ảnh danh mục')
     } finally {
       setSubmitting(false)
     }
@@ -108,7 +108,7 @@ export default function CategoryList() {
       const image_url = response.data.data?.image_urls?.[0] || ''
       setEditingForm(prev => ({ ...prev, image_url }))
     } catch (err) {
-      alert(err.message || 'Failed to upload category image')
+      alert(err.message || 'Không thể tải ảnh danh mục')
     } finally {
       setSubmitting(false)
     }
@@ -117,12 +117,14 @@ export default function CategoryList() {
   return (
     <div className='mx-auto max-w-5xl space-y-6 px-4 py-8'>
       <div>
-        <h1 className='font-display text-2xl font-bold text-white'>Categories</h1>
-        <p className='text-sm text-[#64748b]'>Manage product categories</p>
+        <h1 className='font-display text-2xl font-bold text-white'>
+          Danh mục
+        </h1>
+        <p className='text-sm text-[#64748b]'>Quản lý danh mục sản phẩm</p>
       </div>
 
       <section className='admin-card'>
-        <h2 className='admin-section-title'>Create category</h2>
+        <h2 className='admin-section-title'>Tạo danh mục</h2>
         <form
           onSubmit={handleCreate}
           className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]'
@@ -131,12 +133,12 @@ export default function CategoryList() {
             type='text'
             value={form.name}
             onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-            placeholder='Category name'
+            placeholder='Tên danh mục'
             className='admin-input flex-1'
           />
           <div className='space-y-2'>
             <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
-              + Upload logo
+              + Tải logo
               <input
                 type='file'
                 accept='image/*'
@@ -149,11 +151,15 @@ export default function CategoryList() {
               />
             </label>
             {form.image_url && (
-              <img src={form.image_url} alt='Category' className='h-10 w-10 rounded object-cover' />
+              <img
+                src={form.image_url}
+                alt='Danh mục'
+                className='h-10 w-10 rounded object-cover'
+              />
             )}
           </div>
           <button type='submit' disabled={submitting} className='admin-btn-primary'>
-            Add
+            Thêm
           </button>
         </form>
       </section>
@@ -164,22 +170,22 @@ export default function CategoryList() {
           <thead className='border-b border-white/10 bg-white/5'>
             <tr>
               <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>ID</th>
-              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Name</th>
-              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Image</th>
-              <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Tên</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Ảnh</th>
+              <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Thao tác</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-white/5'>
             {loading ? (
               <tr>
                 <td colSpan={4} className='px-4 py-10 text-center text-[#64748b]'>
-                  Loading...
+                  Đang tải...
                 </td>
               </tr>
             ) : categories.length === 0 ? (
               <tr>
                 <td colSpan={4} className='px-4 py-10 text-center text-[#64748b]'>
-                  No categories
+                  Chưa có danh mục
                 </td>
               </tr>
             ) : (
@@ -204,7 +210,7 @@ export default function CategoryList() {
                     {editing_id === item.category_id ? (
                       <div className='space-y-2'>
                         <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
-                          + Upload logo
+                          + Tải logo
                           <input
                             type='file'
                             accept='image/*'
@@ -219,7 +225,7 @@ export default function CategoryList() {
                         {editing_form.image_url && (
                           <img
                             src={editing_form.image_url}
-                            alt='Category'
+                            alt='Danh mục'
                             className='h-10 w-10 rounded object-cover'
                           />
                         )}
@@ -243,7 +249,7 @@ export default function CategoryList() {
                             onClick={() => handleUpdate(item.category_id)}
                             className='rounded-md border border-emerald-500/40 px-3 py-1 text-xs text-emerald-300 transition hover:bg-emerald-500/10'
                           >
-                            Save
+                            Lưu
                           </button>
                           <button
                             type='button'
@@ -253,7 +259,7 @@ export default function CategoryList() {
                             }}
                             className='admin-btn-ghost !px-3 !py-1 text-xs'
                           >
-                            Cancel
+                            Hủy
                           </button>
                         </>
                       ) : (

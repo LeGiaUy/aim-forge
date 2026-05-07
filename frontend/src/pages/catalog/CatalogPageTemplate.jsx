@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import CatalogFilters from '../../components/catalog/CatalogFilters.jsx'
 import ProductCard from '../../components/ProductCard.jsx'
 import api from '../../services/api.js'
+import { formatVnd } from '../../utils/currency.js'
 
 function ProductSkeleton() {
   return (
@@ -28,11 +29,40 @@ const parse_price_param = value => {
   return Number.isFinite(n) && n >= 0 ? n : null
 }
 
+const map_featured_product = product_item => {
+  if (!product_item) return null
+  const original_price = product_item.price ?? null
+  const final_price =
+    product_item.final_price ??
+    product_item.representative_variant?.final_price ??
+    original_price
+  const discount_amount = product_item.discount_amount ?? 0
+
+  return {
+    product_id: product_item.product_id,
+    name: product_item.name,
+    image_url: product_item.representative_variant?.main_image?.image_url || '',
+    price:
+      final_price !== null && final_price !== undefined
+        ? formatVnd(final_price)
+        : 'Liên hệ',
+    original_price:
+      discount_amount > 0 &&
+      original_price !== null &&
+      original_price !== undefined &&
+      final_price < original_price
+        ? formatVnd(original_price)
+        : ''
+  }
+}
+
 export default function CatalogPageTemplate({
   page_title,
   page_description,
   search_keyword,
-  category_keyword
+  category_keyword,
+  banner_background,
+  featured_product
 }) {
   const [product_list, setProductList] = useState([])
   const [result_total, setResultTotal] = useState(null)
@@ -51,6 +81,27 @@ export default function CatalogPageTemplate({
 
   const [search_params, set_search_params] = useSearchParams()
   const q_from_url = search_params.get('q') ?? ''
+
+  const featured_product_data = useMemo(() => {
+    if (product_list.length > 0) {
+      const sorted_product_list = [...product_list].sort((a, b) => {
+        const a_discount = Number(a.discount_amount || 0)
+        const b_discount = Number(b.discount_amount || 0)
+        if (b_discount !== a_discount) return b_discount - a_discount
+
+        const a_final = Number(a.final_price ?? a.price ?? 0)
+        const b_final = Number(b.final_price ?? b.price ?? 0)
+        return b_final - a_final
+      })
+
+      const in_stock_featured = sorted_product_list.find(
+        item => (item.representative_variant?.stock || 0) > 0
+      )
+      return map_featured_product(in_stock_featured || sorted_product_list[0])
+    }
+
+    return featured_product || null
+  }, [featured_product, product_list])
 
   useEffect(() => {
     setSearchText(q_from_url)
@@ -200,14 +251,94 @@ export default function CatalogPageTemplate({
 
   return (
     <main className='mx-auto min-h-screen w-full max-w-7xl px-4 pb-10 pt-28 lg:px-6'>
-      <header className='mb-6 rounded-xl border border-white/10 bg-[#0f0f1a] p-5'>
-        <h1 className='text-2xl font-bold text-white'>{page_title}</h1>
-        <p className='mt-2 text-sm text-slate-300'>{page_description}</p>
-        {!is_loading && !error_message && result_total !== null && (
-          <p className='mt-2 text-xs text-[#64748b]'>
-            {result_total} sản phẩm
-          </p>
-        )}
+      <header className='mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f1a]'>
+        <div
+          className='relative min-h-[240px] p-5 sm:p-6 lg:min-h-[480px] lg:p-8'
+          style={
+            banner_background
+              ? {
+                  backgroundImage: `linear-gradient(
+                    90deg,
+                    rgba(3, 7, 18, 0.86) 0%,
+                    rgba(3, 7, 18, 0.76) 42%,
+                    rgba(3, 7, 18, 0.48) 68%,
+                    rgba(3, 7, 18, 0.28) 100%
+                  ), url(${banner_background})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }
+              : undefined
+          }
+        >
+          <div className='max-w-2xl rounded-2xl bg-black/35 p-4 backdrop-blur-sm sm:p-5'>
+            <h1 className='text-2xl font-bold text-white sm:text-3xl'>
+              {page_title}
+            </h1>
+            <p className='mt-2 text-sm leading-7 text-slate-200 sm:text-[15px]'>
+              {page_description}
+            </p>
+            {!is_loading && !error_message && result_total !== null && (
+              <p className='mt-3 text-xs text-slate-300'>{result_total} sản phẩm</p>
+            )}
+          </div>
+
+          {featured_product_data && (
+            <aside className='mt-4 w-full max-w-xs lg:absolute lg:bottom-6 lg:right-6 lg:mt-0'>
+              {featured_product_data.product_id ? (
+                <Link
+                  to={`/product/${featured_product_data.product_id}`}
+                  className='block rounded-xl border border-white/15 bg-black/45 p-4 backdrop-blur-sm transition hover:border-cyan-300/60'
+                >
+                  <p className='text-[11px] font-semibold uppercase tracking-wider text-slate-300'>
+                    Sản phẩm nổi bật
+                  </p>
+                  {featured_product_data.image_url && (
+                    <div className='mt-3 h-full overflow-hidden rounded-lg border border-white/10 bg-black/30'>
+                      <img
+                        src={featured_product_data.image_url}
+                        alt={featured_product_data.name}
+                        className='h-full w-full object-cover'
+                        loading='lazy'
+                      />
+                    </div>
+                  )}
+                  <p className='mt-2 text-sm font-semibold leading-6 text-white'>
+                    {featured_product_data.name}
+                  </p>
+                  <div className='mt-2 flex items-center gap-2'>
+                    <span className='text-sm font-semibold text-red-400'>
+                      {featured_product_data.price}
+                    </span>
+                    {featured_product_data.original_price && (
+                      <span className='text-xs text-slate-400 line-through'>
+                        {featured_product_data.original_price}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ) : (
+                <div className='rounded-xl border border-white/15 bg-black/45 p-4 backdrop-blur-sm'>
+                  <p className='text-[11px] font-semibold uppercase tracking-wider text-slate-300'>
+                    Sản phẩm nổi bật
+                  </p>
+                  <p className='mt-2 text-sm font-semibold leading-6 text-white'>
+                    {featured_product_data.name}
+                  </p>
+                  <div className='mt-2 flex items-center gap-2'>
+                    <span className='text-sm font-semibold text-red-400'>
+                      {featured_product_data.price}
+                    </span>
+                    {featured_product_data.original_price && (
+                      <span className='text-xs text-slate-400 line-through'>
+                        {featured_product_data.original_price}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </aside>
+          )}
+        </div>
       </header>
 
       <div className='flex flex-col gap-6 lg:flex-row lg:items-start'>

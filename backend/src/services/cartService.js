@@ -1,6 +1,25 @@
 import { z } from "zod";
 import { prisma } from "../config/db.js";
-import { getProductPricingPayload } from "./pricing.service.js";
+import { getVariantPricingPayload } from "./pricing.service.js";
+import {
+  buildVariantAttributesList,
+  buildVariantDisplayName,
+  getMainGalleryImageUrl,
+} from "./variantDisplay.service.js";
+
+const variant_cart_include = {
+  product: { include: { brand: true } },
+  variant_option_values: {
+    include: {
+      option_value: {
+        include: {
+          option: true,
+          images: { orderBy: { sort_order: "asc" } },
+        },
+      },
+    },
+  },
+};
 
 const addItemSchema = z.object({
   variant_id: z.number().int().positive(),
@@ -32,10 +51,7 @@ export const getCart = async (userId) => {
       items: {
         include: {
           variant: {
-            include: {
-              product: { include: { brand: true } },
-              images: { where: { is_main: true }, take: 1 },
-            },
+            include: variant_cart_include,
           },
         },
       },
@@ -45,12 +61,8 @@ export const getCart = async (userId) => {
   if (!cart) return { cart_id: null, items: [], total: 0 };
 
   const items = cart.items.map((item) => {
-    const vp = getProductPricingPayload({
-      base_price: item.variant.product.price,
-      discount_price: item.variant.product.discount_price,
-      discount_start: item.variant.product.discount_start,
-      discount_end: item.variant.product.discount_end
-    });
+    const vp = getVariantPricingPayload(item.variant);
+    const attrs = buildVariantAttributesList(item.variant);
     return {
       variant_id: item.variant_id,
       quantity: item.quantity,
@@ -64,7 +76,9 @@ export const getCart = async (userId) => {
       product_name: item.variant.product.name,
       brand: item.variant.product.brand?.name || null,
       sku: item.variant.sku,
-      image: item.variant.images[0]?.image_url || null,
+      variant_name: buildVariantDisplayName(item.variant),
+      attributes: attrs,
+      image: getMainGalleryImageUrl(item.variant),
     };
   });
 

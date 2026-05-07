@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import AdminAutosizeTextarea from '../../../components/admin/AdminAutosizeTextarea.jsx'
 import {
   adminAttributeApi,
   adminCategoryApi
@@ -78,7 +79,7 @@ export default function AttributeList() {
       setNewAttributeName('')
       fetchAttributes(selected_category_id)
     } catch (err) {
-      alert(err.message || 'Failed to create attribute')
+      alert(err.message || 'Không thể tạo thuộc tính')
     } finally {
       setSubmitting(false)
     }
@@ -104,7 +105,7 @@ export default function AttributeList() {
       setNewAttributeNames('')
       fetchAttributes(selected_category_id)
     } catch (err) {
-      alert(err.message || 'Failed to create attributes')
+      alert(err.message || 'Không thể tạo nhiều thuộc tính')
     } finally {
       setSubmitting(false)
     }
@@ -122,21 +123,21 @@ export default function AttributeList() {
       setEditingAttributeName('')
       fetchAttributes(selected_category_id)
     } catch (err) {
-      alert(err.message || 'Failed to update attribute')
+      alert(err.message || 'Không thể cập nhật thuộc tính')
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDeleteAttribute = async attribute_id => {
-    if (!window.confirm('Delete this attribute?')) return
+    if (!window.confirm('Bạn có chắc muốn xóa thuộc tính này?')) return
 
     try {
       setSubmitting(true)
       await adminAttributeApi.delete(attribute_id)
       fetchAttributes(selected_category_id)
     } catch (err) {
-      alert(err.message || 'Failed to delete attribute')
+      alert(err.message || 'Không thể xóa thuộc tính')
     } finally {
       setSubmitting(false)
     }
@@ -146,22 +147,22 @@ export default function AttributeList() {
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-8'>
       <div>
         <h1 className='font-display text-2xl font-bold text-white'>
-          Attributes (EAV)
+          Thuộc tính
         </h1>
         <p className='text-sm text-[#64748b]'>
-          Manage SPEC attributes by category
+          Quản lý thuộc tính theo danh mục
         </p>
       </div>
 
       <section className='admin-card space-y-4'>
         <div className='w-full sm:w-72'>
-          <label className='admin-label'>Category</label>
+          <label className='admin-label'>Danh mục</label>
           <select
             value={selected_category_id}
             onChange={e => setSelectedCategoryId(e.target.value)}
             className='admin-select w-full'
           >
-            <option value=''>Select category...</option>
+            <option value=''>Chọn danh mục...</option>
             {categories.map(item => (
               <option key={item.category_id} value={item.category_id}>
                 {item.name}
@@ -178,7 +179,7 @@ export default function AttributeList() {
             type='text'
             value={new_attribute_name}
             onChange={e => setNewAttributeName(e.target.value)}
-            placeholder='Attribute name'
+            placeholder='Tên thuộc tính'
             className='admin-input'
           />
           <button
@@ -186,38 +187,38 @@ export default function AttributeList() {
             disabled={!selected_category_id || submitting}
             className='admin-btn-primary'
           >
-            Add attribute
+            Thêm thuộc tính
           </button>
         </form>
 
         <form onSubmit={handleCreateAttributesBatch} className='space-y-3'>
-          <textarea
+          <AdminAutosizeTextarea
             value={new_attribute_names}
             onChange={e => setNewAttributeNames(e.target.value)}
-            placeholder='Add multiple attributes, one per line or separated by commas'
-            rows={4}
-            className='admin-input w-full resize-y'
+            min_rows={4}
+            className='w-full'
+            placeholder='Thêm nhiều thuộc tính, mỗi dòng một giá trị hoặc phân tách bằng dấu phẩy'
           />
           <button
             type='submit'
             disabled={!selected_category_id || submitting}
             className='admin-btn-primary'
           >
-            Add multiple attributes
+            Thêm nhiều thuộc tính
           </button>
         </form>
       </section>
 
       <section className='space-y-4'>
         {loading ? (
-          <div className='admin-card text-center text-[#64748b]'>Loading...</div>
+          <div className='admin-card text-center text-[#64748b]'>Đang tải...</div>
         ) : !selected_category ? (
           <div className='admin-card text-center text-[#64748b]'>
-            Select a category to manage attributes
+            Chọn danh mục để quản lý thuộc tính
           </div>
         ) : attributes.length === 0 ? (
           <div className='admin-card text-center text-[#64748b]'>
-            No attributes for this category
+            Danh mục này chưa có thuộc tính
           </div>
         ) : (
           attributes.map(attribute_item => (
@@ -243,7 +244,7 @@ export default function AttributeList() {
                         onClick={() => handleUpdateAttribute(attribute_item.attribute_id)}
                         className='rounded-md border border-emerald-500/40 px-3 py-1 text-xs text-emerald-300 transition hover:bg-emerald-500/10'
                       >
-                        Save
+                        Lưu
                       </button>
                       <button
                         type='button'
@@ -253,7 +254,7 @@ export default function AttributeList() {
                         }}
                         className='admin-btn-ghost !px-3 !py-1 text-xs'
                       >
-                        Cancel
+                        Hủy
                       </button>
                     </>
                   ) : (
@@ -266,14 +267,14 @@ export default function AttributeList() {
                         }}
                         className='admin-btn-ghost !px-3 !py-1 text-xs'
                       >
-                        Edit
+                        Sửa
                       </button>
                       <button
                         type='button'
                         onClick={() => handleDeleteAttribute(attribute_item.attribute_id)}
                         className='rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 transition hover:bg-red-500/10'
                       >
-                        Delete
+                        Xóa
                       </button>
                     </>
                   )}

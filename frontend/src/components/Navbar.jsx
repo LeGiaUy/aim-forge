@@ -234,20 +234,22 @@ export default function Navbar() {
             <>
               <Link
                 to='/profile'
-                className='flex h-10 items-center gap-2 rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 text-xs font-semibold uppercase tracking-wider text-[#d8b4fe] transition hover:border-cyan-400/50 hover:text-cyan-200'
+                className='flex h-10 min-w-[7rem] items-center gap-2 overflow-hidden rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 text-xs font-semibold uppercase tracking-wider text-[#d8b4fe] transition hover:border-cyan-400/50 hover:text-cyan-200 justify-center'
               >
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
                     alt='Avatar'
-                    className='h-6 w-6 rounded-full border border-white/20 object-cover'
+                    className='h-6 w-6 shrink-0 rounded-full border border-white/20 object-cover'
                   />
                 ) : (
-                  <span className='flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-bold text-white'>
+                  <span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[10px] font-bold text-white'>
                     {(user?.username || 'U').slice(0, 1).toUpperCase()}
                   </span>
                 )}
-                {user?.username || 'Profile'}
+                <span className='min-w-0 truncate'>
+                  {user?.username || 'Profile'}
+                </span>
               </Link>
               <button
                 type='button'

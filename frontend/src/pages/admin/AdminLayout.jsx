@@ -2,13 +2,13 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { AdminToastProvider } from '../../components/admin/AdminUi.jsx'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/admin/dashboard' },
-  { label: 'Products', path: '/admin/products' },
-  { label: 'Orders', path: '/admin/orders' },
-  { label: 'Categories', path: '/admin/categories' },
-  { label: 'Brands', path: '/admin/brands' },
-  { label: 'Attributes', path: '/admin/attributes' },
-  { label: 'Users', path: '/admin/users' }
+  { label: 'Tổng quan', path: '/admin/dashboard' },
+  { label: 'Thương hiệu', path: '/admin/brands' },
+  { label: 'Danh mục', path: '/admin/categories' },
+  { label: 'Thuộc tính', path: '/admin/attributes' },
+  { label: 'Sản phẩm', path: '/admin/products' },
+  { label: 'Đơn hàng', path: '/admin/orders' },
+  { label: 'Người dùng', path: '/admin/users' }
 ]
 
 export default function AdminLayout() {
@@ -27,7 +27,7 @@ export default function AdminLayout() {
                   <span className='text-white'>Forge</span>
                 </span>
                 <span className='rounded-md bg-[#7c3aed]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#c4b5fd]'>
-                  Admin
+                  Quản trị
                 </span>
               </Link>
 
@@ -55,7 +55,7 @@ export default function AdminLayout() {
               to='/'
               className='text-xs text-[#64748b] transition hover:text-white'
             >
-              ← Back to Store
+              ← Về trang mua sắm
             </Link>
           </div>
         </header>

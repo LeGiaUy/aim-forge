@@ -1,39 +1,10 @@
 /**
- * Product pricing: base → product discount → (future: flash sale → coupon)
+ * Giá bán theo SKU: price = giá thực thu, compare_price = giá niêm (gạch ngang).
  */
 
-const toNumber = value => {
+const toNumber = (value) => {
   if (value === null || value === undefined) return 0
   return Number(value)
-}
-
-export const isProductDiscountActive = (product, now = new Date()) => {
-  if (!product || product.discount_price == null) return false
-
-  const base = toNumber(product.base_price)
-  const disc = toNumber(product.discount_price)
-  if (!(disc < base)) return false
-
-  const start = product.discount_start
-    ? new Date(product.discount_start).getTime()
-    : null
-  const end = product.discount_end
-    ? new Date(product.discount_end).getTime()
-    : null
-  if (start == null || end == null) return false
-
-  const t = now.getTime()
-  return t >= start && t <= end
-}
-
-export const getProductPrice = (product, now = new Date()) => {
-  const base = toNumber(product?.base_price)
-  if (!product) return base
-
-  if (isProductDiscountActive(product, now)) {
-    return toNumber(product.discount_price)
-  }
-  return base
 }
 
 export const calculateSaving = (price, discountPrice) => {
@@ -47,31 +18,49 @@ export const calculateDiscountPercent = (price, discountPrice) => {
   return Math.round(((p - d) / p) * 10000) / 100
 }
 
-export const getProductPricingPayload = (product, now = new Date()) => {
-  const price = toNumber(product?.base_price)
-  const active = isProductDiscountActive(product, now)
-  const discNum = active ? toNumber(product.discount_price) : null
-  const finalPrice = active ? discNum : price
+/**
+ * Chuẩn hoá compare_price: chỉ giữ khi > giá bán.
+ */
+export const normalizeVariantComparePrice = (sell_raw, compare_raw) => {
+  const sell = toNumber(sell_raw)
+  if (compare_raw === null || compare_raw === undefined) return null
+  const c = toNumber(compare_raw)
+  if (!Number.isFinite(c) || c <= sell) return null
+  return c
+}
 
-  let discountAmount = null
-  let discountPercent = null
-  let discountPrice = null
-
-  if (active && discNum != null) {
-    discountPrice = discNum
-    discountAmount = calculateSaving(price, discNum)
-    discountPercent = calculateDiscountPercent(price, discNum)
-  }
-
+/**
+ * Payload hiển thị / API thống nhất (tương thích field cũ discount_*).
+ */
+export const getVariantPricingPayload = (variant) => {
+  const sell = toNumber(variant?.price)
+  const compare = normalizeVariantComparePrice(sell, variant?.compare_price)
+  const on_sale = compare != null
+  const strike = on_sale ? compare : sell
   return {
-    price,
-    final_price: finalPrice,
-    discount_price: discountPrice,
-    discount_amount: discountAmount,
-    discount_percent: discountPercent
+    price: strike,
+    final_price: sell,
+    discount_price: on_sale ? sell : null,
+    discount_amount: on_sale ? calculateSaving(compare, sell) : null,
+    discount_percent: on_sale ? calculateDiscountPercent(compare, sell) : null,
   }
 }
 
-export const getFinalPrice = (product, now = new Date(), _extra = {}) => {
-  return getProductPrice(product, now)
+/**
+ * Fallback khi chỉ có Product.price (listing), không có variant.
+ */
+export const getSimplePricingPayload = (amount) => {
+  const p = toNumber(amount)
+  return {
+    price: p,
+    final_price: p,
+    discount_price: null,
+    discount_amount: null,
+    discount_percent: null,
+  }
 }
+
+/** Đơn giá bán snapshot (cart / order). */
+export const getVariantSellPrice = (variant) => toNumber(variant?.price)
+
+export const getFinalPrice = (variant) => getVariantSellPrice(variant)

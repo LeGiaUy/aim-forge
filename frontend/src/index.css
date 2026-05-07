@@ -259,6 +259,13 @@ body {
   color: #475569;
 }
 
+/* Textarea tự giãn dọc (kèm AdminAutosizeTextarea) */
+textarea.admin-input.admin-textarea-autosize {
+  resize: none;
+  box-sizing: border-box;
+  vertical-align: top;
+}
+
 .admin-select {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.12);

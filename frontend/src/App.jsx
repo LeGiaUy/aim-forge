@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Footer from './components/Footer.jsx'
 import Navbar from './components/Navbar.jsx'
+import ScrollToTop from './components/ScrollToTop.jsx'
 import PrivateRoute from './components/PrivateRoute.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import Home from './pages/Home.jsx'
@@ -40,6 +41,7 @@ function App() {
 
   return (
     <div className='flex min-h-screen flex-col'>
+      <ScrollToTop />
       {!is_auth_page && !is_admin_page && <Navbar />}
       <div className='flex-1'>
         <Routes>

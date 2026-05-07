@@ -30,7 +30,7 @@ const MinusIcon = () => (
 const getStockState = stock_value => {
   if (!stock_value || stock_value <= 0) {
     return {
-      label: 'Out of stock',
+      label: 'Hết hàng',
       class_name:
         'border-red-400/30 bg-red-500/10 text-red-300'
     }
@@ -38,14 +38,14 @@ const getStockState = stock_value => {
 
   if (stock_value < 5) {
     return {
-      label: `Low stock (${stock_value} left)`,
+      label: `Sắp hết hàng (còn ${stock_value})`,
       class_name:
         'border-amber-400/30 bg-amber-500/10 text-amber-300'
     }
   }
 
   return {
-    label: `In stock (${stock_value})`,
+    label: `Còn hàng (${stock_value})`,
     class_name:
       'border-emerald-400/30 bg-emerald-500/10 text-emerald-300'
   }
@@ -91,9 +91,9 @@ export default function AddToCart({ selected_variant }) {
         variant_id: selected_variant.variant_id,
         quantity: quantity_value
       })
-      showToast('Item added to cart', 'success')
+      showToast('Đã thêm vào giỏ hàng', 'success')
     } catch (error) {
-      showToast(error.message || 'Add to cart failed', 'error')
+      showToast(error.message || 'Thêm vào giỏ thất bại', 'error')
     } finally {
       setLoadingState(false)
     }
@@ -109,13 +109,13 @@ export default function AddToCart({ selected_variant }) {
 
       <div className='flex items-center gap-3'>
         <p className='text-xs font-display uppercase tracking-wider text-[#94a3b8]'>
-          Quantity
+          Số lượng
         </p>
 
         <div className='flex items-center rounded-lg border border-white/15 bg-white/5'>
           <button
             type='button'
-            aria-label='Decrease quantity'
+            aria-label='Giảm số lượng'
             onClick={() => updateQuantity(quantity_value - 1)}
             className='flex h-10 w-10 items-center justify-center text-[#cbd5e1] transition hover:text-white'
           >
@@ -126,7 +126,7 @@ export default function AddToCart({ selected_variant }) {
           </span>
           <button
             type='button'
-            aria-label='Increase quantity'
+            aria-label='Tăng số lượng'
             onClick={() => updateQuantity(quantity_value + 1)}
             className='flex h-10 w-10 items-center justify-center text-[#cbd5e1] transition hover:text-white'
           >
@@ -145,7 +145,7 @@ export default function AddToCart({ selected_variant }) {
             : 'cursor-pointer bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] text-white shadow-[0_0_24px_rgba(124,58,237,0.45)] hover:brightness-110'
         }`}
       >
-        {loading_state ? 'Adding...' : 'Add to cart'}
+        {loading_state ? 'Đang thêm...' : 'Thêm vào giỏ'}
       </button>
 
       {toast_state.message && (

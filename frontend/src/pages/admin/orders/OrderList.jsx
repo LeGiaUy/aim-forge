@@ -15,6 +15,16 @@ const ORDER_STATUSES = [
   'CANCELLED'
 ]
 
+const STATUS_LABELS = {
+  PENDING: 'Chờ xử lý',
+  PAID: 'Đã thanh toán',
+  PROCESSING: 'Đang xử lý',
+  SHIPPED: 'Đang giao',
+  COMPLETED: 'Hoàn tất',
+  FAILED: 'Thất bại',
+  CANCELLED: 'Đã hủy'
+}
+
 export default function OrderList() {
   const [order_list, setOrderList] = useState([])
   const [pagination_data, setPaginationData] = useState({
@@ -67,9 +77,11 @@ export default function OrderList() {
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-8'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='font-display text-2xl font-bold text-white'>Orders</h1>
+          <h1 className='font-display text-2xl font-bold text-white'>
+            Đơn hàng
+          </h1>
           <p className='text-sm text-[#64748b]'>
-            {pagination_data.total} orders total
+            Tổng cộng {pagination_data.total} đơn hàng
           </p>
         </div>
       </div>
@@ -77,7 +89,7 @@ export default function OrderList() {
       <div className='admin-card'>
         <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
           <div>
-            <label className='admin-label'>Status</label>
+            <label className='admin-label'>Trạng thái</label>
             <select
               value={filter_data.status}
               onChange={event =>
@@ -90,13 +102,13 @@ export default function OrderList() {
             >
               {ORDER_STATUSES.map(status_value => (
                 <option key={status_value || 'all'} value={status_value}>
-                  {status_value || 'ALL'}
+                  {status_value ? STATUS_LABELS[status_value] : 'Tất cả'}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className='admin-label'>From Date</label>
+            <label className='admin-label'>Từ ngày</label>
             <input
               type='date'
               value={filter_data.start_date}
@@ -110,7 +122,7 @@ export default function OrderList() {
             />
           </div>
           <div>
-            <label className='admin-label'>To Date</label>
+            <label className='admin-label'>Đến ngày</label>
             <input
               type='date'
               value={filter_data.end_date}
@@ -131,22 +143,22 @@ export default function OrderList() {
           <thead className='border-b border-white/10 bg-white/5'>
             <tr>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Order
+                Đơn hàng
               </th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                User
+                Người dùng
               </th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Status
+                Trạng thái
               </th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Payment
+                Thanh toán
               </th>
               <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Total
+                Tổng tiền
               </th>
               <th className='px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Actions
+                Thao tác
               </th>
             </tr>
           </thead>
@@ -154,13 +166,13 @@ export default function OrderList() {
             {is_loading ? (
               <tr>
                 <td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>
-                  Loading...
+                  Đang tải...
                 </td>
               </tr>
             ) : order_list.length === 0 ? (
               <tr>
                 <td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>
-                  No orders found
+                  Không tìm thấy đơn hàng
                 </td>
               </tr>
             ) : (
@@ -176,7 +188,9 @@ export default function OrderList() {
                     </p>
                   </td>
                   <td className='px-5 py-4 text-[#94a3b8]'>
-                    {order_data.user?.email || order_data.user?.username || 'N/A'}
+                    {order_data.user?.email ||
+                      order_data.user?.username ||
+                      'Chưa có'}
                   </td>
                   <td className='px-5 py-4'>
                     <StatusBadge value={order_data.status} />
@@ -197,7 +211,7 @@ export default function OrderList() {
                       to={`/admin/orders/${order_data.order_id}`}
                       className='rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-[#94a3b8] transition hover:border-[#9f67ff]/50 hover:text-white'
                     >
-                      View
+                      Xem
                     </Link>
                   </td>
                 </tr>
@@ -214,17 +228,17 @@ export default function OrderList() {
             disabled={pagination_data.page <= 1}
             className='admin-btn-ghost text-xs disabled:opacity-30'
           >
-            ← Prev
+            ← Trước
           </button>
           <span className='px-3 text-sm text-[#94a3b8]'>
-            Page {pagination_data.page} of {pagination_data.total_pages}
+            Trang {pagination_data.page}/{pagination_data.total_pages}
           </span>
           <button
             onClick={() => fetchOrders(pagination_data.page + 1)}
             disabled={pagination_data.page >= pagination_data.total_pages}
             className='admin-btn-ghost text-xs disabled:opacity-30'
           >
-            Next →
+            Sau →
           </button>
         </div>
       )}

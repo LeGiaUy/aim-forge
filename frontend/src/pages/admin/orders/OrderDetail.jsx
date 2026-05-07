@@ -7,12 +7,23 @@ import {
 } from '../../../components/admin/AdminUi.jsx'
 import { adminOrderApi } from '../../../services/adminApi.js'
 import { formatVnd } from '../../../utils/currency.js'
+import { format_variant_label } from '../../../utils/variantDisplay.js'
 
 const NEXT_STATUS_MAP = {
   PENDING: ['PROCESSING', 'CANCELLED'],
   PAID: ['PROCESSING', 'CANCELLED'],
   PROCESSING: ['SHIPPED'],
   SHIPPED: ['COMPLETED']
+}
+
+const STATUS_LABELS = {
+  PENDING: 'Chờ xử lý',
+  PAID: 'Đã thanh toán',
+  PROCESSING: 'Đang xử lý',
+  SHIPPED: 'Đang giao',
+  COMPLETED: 'Hoàn tất',
+  FAILED: 'Thất bại',
+  CANCELLED: 'Đã hủy'
 }
 
 export default function OrderDetail() {
@@ -31,7 +42,7 @@ export default function OrderDetail() {
       const response = await adminOrderApi.getById(id)
       setOrderData(response.data?.data || null)
     } catch (error) {
-      const message = error.message || 'Cannot load order detail'
+      const message = error.message || 'Không thể tải chi tiết đơn hàng'
       setErrorText(message)
       showError(message)
     } finally {
@@ -54,9 +65,13 @@ export default function OrderDetail() {
     try {
       const response = await adminOrderApi.updateStatus(id, new_status)
       setOrderData(response.data?.data || null)
-      showSuccess(`Order updated to ${new_status}`)
+      showSuccess(
+        `Đã cập nhật đơn hàng sang trạng thái ${
+          STATUS_LABELS[new_status] || new_status
+        }`
+      )
     } catch (error) {
-      const message = error.message || 'Cannot update order status'
+      const message = error.message || 'Không thể cập nhật trạng thái đơn hàng'
       setErrorText(message)
       showError(message)
     } finally {
@@ -69,18 +84,20 @@ export default function OrderDetail() {
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-8'>
       <div className='flex items-center justify-between'>
         <h1 className='font-display text-2xl font-bold text-white'>
-          Order Detail
+          Chi tiết đơn hàng
         </h1>
         <Link
           to='/admin/orders'
           className='text-xs text-[#94a3b8] transition hover:text-white'
         >
-          ← Back to orders
+          ← Quay lại danh sách đơn
         </Link>
       </div>
 
       {is_loading && (
-        <div className='admin-card text-[#64748b]'>Loading order detail...</div>
+        <div className='admin-card text-[#64748b]'>
+          Đang tải chi tiết đơn hàng...
+        </div>
       )}
 
       {!is_loading && error_text && (
@@ -94,27 +111,31 @@ export default function OrderDetail() {
           <div className='admin-card space-y-4'>
             <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
               <div>
-                <p className='text-sm text-[#94a3b8]'>Order #{order_data.order_id}</p>
+                <p className='text-sm text-[#94a3b8]'>
+                  Đơn #{order_data.order_id}
+                </p>
                 <p className='text-xs text-[#64748b]'>
                   {new Date(order_data.created_at).toLocaleString('vi-VN')}
                 </p>
                 <p className='mt-2 text-sm text-[#cbd5e1]'>
-                  User: {order_data.user?.email || 'N/A'}
+                  Người dùng: {order_data.user?.email || 'Chưa có'}
                 </p>
-                <p className='text-sm text-[#cbd5e1]'>Address: {order_data.address}</p>
+                <p className='text-sm text-[#cbd5e1]'>
+                  Địa chỉ: {order_data.address}
+                </p>
               </div>
               <div className='text-right'>
                 <div className='flex justify-end gap-2'>
-                  <StatusBadge value={order_data.status} label='Order' />
+                  <StatusBadge value={order_data.status} label='Đơn hàng' />
                 </div>
                 <div className='mt-2 flex justify-end gap-2'>
                   <StatusBadge
                     value={order_data.payments?.[0]?.method || 'N/A'}
-                    label='Method'
+                    label='Phương thức'
                   />
                   <StatusBadge
                     value={order_data.payments?.[0]?.status || 'PENDING'}
-                    label='Payment'
+                    label='Thanh toán'
                   />
                 </div>
                 <p className='mt-1 text-base font-semibold text-emerald-400'>
@@ -125,12 +146,12 @@ export default function OrderDetail() {
 
             <div className='border-t border-white/10 pt-4'>
               <p className='mb-2 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Update status
+                Cập nhật trạng thái
               </p>
               <div className='flex flex-wrap gap-2'>
                 {next_statuses.length === 0 && (
                   <span className='text-sm text-[#64748b]'>
-                    No allowed transition
+                    Không có trạng thái kế tiếp hợp lệ
                   </span>
                 )}
                 {next_statuses.map(status_value => (
@@ -140,7 +161,9 @@ export default function OrderDetail() {
                     disabled={is_updating}
                     className='rounded-lg border border-[#9f67ff]/40 bg-[#7c3aed]/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-[#7c3aed]/20 disabled:cursor-not-allowed disabled:opacity-60'
                   >
-                    {is_updating ? 'Updating...' : status_value}
+                    {is_updating
+                      ? 'Đang cập nhật...'
+                      : STATUS_LABELS[status_value] || status_value}
                   </button>
                 ))}
               </div>
@@ -152,19 +175,19 @@ export default function OrderDetail() {
               <thead className='border-b border-white/10 bg-white/5'>
                 <tr>
                   <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                    Product
+                    Sản phẩm
                   </th>
                   <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                    Variant
+                    Phân loại
                   </th>
                   <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                    Qty
+                    SL
                   </th>
                   <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                    Price
+                    Đơn giá
                   </th>
                   <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                    Subtotal
+                    Thành tiền
                   </th>
                 </tr>
               </thead>
@@ -172,10 +195,15 @@ export default function OrderDetail() {
                 {order_data.items.map(item_data => (
                   <tr key={`${item_data.order_id}-${item_data.variant_id}`}>
                     <td className='px-5 py-4 text-white'>
-                      {item_data.variant?.product?.name || 'N/A'}
+                      {item_data.variant?.product?.name || 'Chưa có'}
                     </td>
-                    <td className='px-5 py-4 text-[#94a3b8]'>
-                      #{item_data.variant_id}
+                    <td className='max-w-xs px-5 py-4 text-[#94a3b8]'>
+                      <span className='block text-xs text-[#64748b]'>
+                        #{item_data.variant_id}
+                      </span>
+                      <span className='mt-0.5 block text-sm text-[#cbd5e1]'>
+                        {format_variant_label(item_data.variant)}
+                      </span>
                     </td>
                     <td className='px-5 py-4 text-[#cbd5e1]'>{item_data.quantity}</td>
                     <td className='px-5 py-4 text-[#cbd5e1]'>
@@ -193,9 +221,12 @@ export default function OrderDetail() {
       )}
       <ConfirmDialog
         open={Boolean(pending_status)}
-        title='Confirm status update'
-        message={`Update order #${id} to ${pending_status}?`}
-        confirm_text='Update'
+        title='Xác nhận cập nhật trạng thái'
+        message={`Cập nhật đơn #${id} sang trạng thái ${
+          STATUS_LABELS[pending_status] || pending_status
+        }?`}
+        confirm_text='Cập nhật'
+        cancel_text='Hủy'
         on_cancel={() => setPendingStatus('')}
         on_confirm={() => handleUpdateStatus(pending_status)}
         is_loading={is_updating}

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 
 const TAB_ITEMS = [
-  { id: 'description', label: 'Description' },
-  { id: 'specs', label: 'Specifications' },
-  { id: 'shipping', label: 'Shipping' }
+  { id: 'specs', label: 'Thông số' },
+  { id: 'description', label: 'Mô tả' },
+  { id: 'shipping', label: 'Vận chuyển' }
 ]
 
 export default function ProductTabs({ description, specs }) {
-  const [active_tab, setActiveTab] = useState('description')
+  const [active_tab, setActiveTab] = useState('specs')
 
   const has_specs = useMemo(() => {
     return Boolean(specs?.length)
@@ -34,7 +34,7 @@ export default function ProductTabs({ description, specs }) {
 
       {active_tab === 'description' && (
         <p className='whitespace-pre-line pt-4 text-sm leading-7 text-[#cbd5e1]'>
-          {description || 'No detailed description available'}
+          {description || 'Chưa có mô tả chi tiết'}
         </p>
       )}
 
@@ -42,7 +42,7 @@ export default function ProductTabs({ description, specs }) {
         <div className='pt-4'>
           {!has_specs && (
             <p className='text-sm text-[#94a3b8]'>
-              Specifications are not available yet
+              Thông số đang được cập nhật
             </p>
           )}
 
@@ -68,10 +68,10 @@ export default function ProductTabs({ description, specs }) {
 
       {active_tab === 'shipping' && (
         <div className='space-y-3 pt-4 text-sm text-[#cbd5e1]'>
-          <p>Free shipping for orders over 2.500.000₫</p>
-          <p>Standard delivery: 3-5 business days</p>
-          <p>Express delivery: 1-2 business days</p>
-          <p>30-day return policy for sealed products</p>
+          <p>Miễn phí vận chuyển cho đơn hàng từ 2.500.000₫</p>
+          <p>Giao hàng tiêu chuẩn: 3-5 ngày làm việc</p>
+          <p>Giao hàng nhanh: 1-2 ngày làm việc</p>
+          <p>Đổi trả trong 30 ngày với sản phẩm còn niêm phong</p>
         </div>
       )}
     </section>

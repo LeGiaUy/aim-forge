@@ -45,7 +45,7 @@ export default function ProductInfo({
               onError={() => setCategoryLogoErr(true)}
             />
           )}
-          {product_data.category?.name || 'Gaming Gear'}
+          {product_data.category?.name || 'Thiết bị gaming'}
         </span>
       </div>
 
@@ -61,7 +61,7 @@ export default function ProductInfo({
       </div>
 
       <p className='max-w-[64ch] whitespace-pre-line text-sm leading-6 text-[#94a3b8]'>
-        {product_data.description || 'No description available for this product'}
+        {product_data.description || 'Sản phẩm này chưa có mô tả'}
       </p>
 
       <PriceDisplay

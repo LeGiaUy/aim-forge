@@ -7,6 +7,11 @@ import {
 } from '../../../services/adminApi.js'
 import { formatVnd } from '../../../utils/currency.js'
 
+/** Class chung cho ô tiêu đề bảng (không cho xuống dòng) */
+const thead_th_base =
+  'whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase ' +
+  'tracking-wider text-[#94a3b8]'
+
 export default function ProductList() {
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
@@ -56,13 +61,13 @@ export default function ProductList() {
   }, [])
 
   const handleDelete = async (product_id) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return
+    if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) return
     try {
       setDeletingId(product_id)
       await adminProductApi.delete(product_id)
       fetchProducts(pagination.page)
     } catch {
-      alert('Failed to delete product')
+      alert('Không xóa được sản phẩm')
     } finally {
       setDeletingId(null)
     }
@@ -94,14 +99,14 @@ export default function ProductList() {
       {/* ─── Header ─── */}
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
-          <h1 className='font-display text-2xl font-bold text-white'>Products</h1>
-          <p className='text-sm text-[#64748b]'>{pagination.total} products total</p>
+          <h1 className='font-display text-2xl font-bold text-white'>Sản phẩm</h1>
+          <p className='text-sm text-[#64748b]'>Tổng {pagination.total} sản phẩm</p>
         </div>
         <button
           onClick={() => navigate('/admin/products/create')}
           className='admin-btn-primary'
         >
-          + New Product
+          + Thêm sản phẩm
         </button>
       </div>
 
@@ -109,23 +114,23 @@ export default function ProductList() {
       <div className='admin-card'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
           <div className='flex-1'>
-            <label className='admin-label'>Search</label>
+            <label className='admin-label'>Tìm kiếm</label>
             <input
               type='text'
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder='Search by name...'
+              placeholder='Tìm theo tên...'
               className='admin-input w-full'
             />
           </div>
           <div className='w-40'>
-            <label className='admin-label'>Category</label>
+            <label className='admin-label'>Danh mục</label>
             <select
               value={filters.category_id}
               onChange={e => setFilters(p => ({ ...p, category_id: e.target.value }))}
               className='admin-select w-full'
             >
-              <option value=''>All</option>
+              <option value=''>Tất cả</option>
               {categories.map(item => (
                 <option key={item.category_id} value={item.category_id}>
                   {item.name}
@@ -134,13 +139,13 @@ export default function ProductList() {
             </select>
           </div>
           <div className='w-40'>
-            <label className='admin-label'>Brand</label>
+            <label className='admin-label'>Thương hiệu</label>
             <select
               value={filters.brand_id}
               onChange={e => setFilters(p => ({ ...p, brand_id: e.target.value }))}
               className='admin-select w-full'
             >
-              <option value=''>All</option>
+              <option value=''>Tất cả</option>
               {brands.map(item => (
                 <option key={item.brand_id} value={item.brand_id}>
                   {item.name}
@@ -156,19 +161,19 @@ export default function ProductList() {
         <table className='w-full text-sm'>
           <thead className='border-b border-white/10 bg-white/5'>
             <tr>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Product</th>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Category</th>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Brand</th>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Price</th>
-              <th className='px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Stock</th>
-              <th className='px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
+              <th className={`${thead_th_base} text-left`}>Sản phẩm</th>
+              <th className={`${thead_th_base} text-left`}>Danh mục</th>
+              <th className={`${thead_th_base} text-left`}>Thương hiệu</th>
+              <th className={`${thead_th_base} text-left`}>Giá</th>
+              <th className={`${thead_th_base} text-left`}>Tồn kho</th>
+              <th className={`${thead_th_base} text-right`}>Thao tác</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-white/5'>
             {loading ? (
-              <tr><td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>Loading...</td></tr>
+              <tr><td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>Đang tải…</td></tr>
             ) : products.length === 0 ? (
-              <tr><td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>No products found</td></tr>
+              <tr><td colSpan={6} className='px-5 py-12 text-center text-[#64748b]'>Chưa có sản phẩm</td></tr>
             ) : (
               products.map(p => (
                 <tr key={p.product_id} className='transition hover:bg-white/[0.03]'>
@@ -182,7 +187,7 @@ export default function ProductList() {
                         />
                       ) : (
                         <div className='flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[10px] text-[#64748b]'>
-                          N/A
+                          —
                         </div>
                       )}
                       <Link to={`/admin/products/edit/${p.product_id}`} className='font-medium text-white transition hover:text-[#9f67ff]'>
@@ -203,7 +208,7 @@ export default function ProductList() {
                             {formatPrice(p.final_price)}
                           </p>
                           <p className='text-[11px] font-medium text-cyan-300'>
-                            Save {formatPrice(Math.round(p.discount_amount))}
+                            Tiết kiệm {formatPrice(Math.round(p.discount_amount))}
                           </p>
                         </div>
                       ) : (
@@ -232,14 +237,14 @@ export default function ProductList() {
                         onClick={() => navigate(`/admin/products/edit/${p.product_id}`)}
                         className='rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-[#94a3b8] transition hover:border-[#9f67ff]/50 hover:text-white'
                       >
-                        Edit
+                        Sửa
                       </button>
                       <button
                         onClick={() => handleDelete(p.product_id)}
                         disabled={deleting_id === p.product_id}
                         className='rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-500/20 disabled:opacity-40'
                       >
-                        {deleting_id === p.product_id ? '...' : 'Delete'}
+                        {deleting_id === p.product_id ? '…' : 'Xóa'}
                       </button>
                     </div>
                   </td>
@@ -258,17 +263,17 @@ export default function ProductList() {
             disabled={pagination.page <= 1}
             className='admin-btn-ghost text-xs disabled:opacity-30'
           >
-            ← Prev
+            ← Trước
           </button>
           <span className='px-3 text-sm text-[#94a3b8]'>
-            Page {pagination.page} of {pagination.total_pages}
+            Trang {pagination.page} / {pagination.total_pages}
           </span>
           <button
             onClick={() => fetchProducts(pagination.page + 1)}
             disabled={pagination.page >= pagination.total_pages}
             className='admin-btn-ghost text-xs disabled:opacity-30'
           >
-            Next →
+            Sau →
           </button>
         </div>
       )}

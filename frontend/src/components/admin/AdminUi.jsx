@@ -13,6 +13,22 @@ const STATUS_COLOR_MAP = {
   VNPAY: 'bg-violet-500/15 text-violet-300 border-violet-500/30'
 }
 
+const STATUS_LABEL_MAP = {
+  PENDING: 'Chờ xử lý',
+  PAID: 'Đã thanh toán',
+  PROCESSING: 'Đang xử lý',
+  SHIPPED: 'Đang giao',
+  COMPLETED: 'Hoàn tất',
+  FAILED: 'Thất bại',
+  CANCELLED: 'Đã hủy',
+  SUCCESS: 'Thành công',
+  COD: 'Thanh toán khi nhận hàng',
+  VNPAY: 'VNPay',
+  METHOD: 'Phương thức',
+  PAYMENT: 'Thanh toán',
+  ORDER: 'Đơn hàng'
+}
+
 const TOAST_COLOR_MAP = {
   success: 'border-emerald-500/30 bg-emerald-500/15 text-emerald-200',
   error: 'border-red-500/30 bg-red-500/15 text-red-200',
@@ -24,12 +40,16 @@ const AdminToastContext = createContext(null)
 export function StatusBadge({ value, label }) {
   const color_class =
     STATUS_COLOR_MAP[value] || 'bg-white/10 text-[#cbd5e1] border-white/20'
+  const display_value = STATUS_LABEL_MAP[value] || value
+  const display_label = label
+    ? STATUS_LABEL_MAP[label.toUpperCase()] || label
+    : ''
 
   return (
     <span
       className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${color_class}`}
     >
-      {label ? `${label}: ${value}` : value}
+      {label ? `${display_label}: ${display_value}` : display_value}
     </span>
   )
 }

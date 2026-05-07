@@ -17,19 +17,27 @@ const normalizeProduct = raw_product => {
           ? { image_url: image_item }
           : image_item
     ),
-    attributes: (variant_item.attributes || variant_item.attributes_detail || []).map(
-      attribute_item => ({
-        attribute: attribute_item.attribute,
-        value: attribute_item.value,
-        value_id: attribute_item.value_id
-      })
-    ),
-    color: variant_item.color || '',
+    attributes: (
+      variant_item.attributes ||
+      variant_item.attributes_detail ||
+      []
+    ).map(attribute_item => ({
+      attribute: attribute_item.attribute,
+      value: attribute_item.value,
+      value_id: attribute_item.value_id
+    })),
     stock: Number(variant_item.stock)
   }))
 
+  const normalized_options = [...(raw_product.product_options || [])].sort(
+    (a, b) =>
+      (a.sort_order ?? 0) - (b.sort_order ?? 0) ||
+      (a.option_id ?? 0) - (b.option_id ?? 0)
+  )
+
   return {
     ...raw_product,
+    product_options: normalized_options,
     variants: normalized_variants
   }
 }
@@ -57,8 +65,15 @@ export const useProductDetail = product_id => {
       setSelectedImage(default_variant?.images?.[0]?.image_url || '')
 
       if (normalized_product?.category?.category_id) {
+        /** Cùng danh mục; nếu có thương hiệu thì thêm brand — tránh nhầm các dòng SKU khác hẳn */
+        const related_params = {
+          category_id: normalized_product.category.category_id,
+          ...(normalized_product.brand?.brand_id != null ?
+            { brand_id: normalized_product.brand.brand_id }
+          : {})
+        }
         const related_response = await api.get('/products', {
-          params: { category_id: normalized_product.category.category_id }
+          params: related_params,
         })
 
         const related_data = related_response.data?.data
@@ -77,7 +92,7 @@ export const useProductDetail = product_id => {
         setRelatedProducts([])
       }
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to load product detail')
+      setErrorMessage(error.message || 'Không thể tải chi tiết sản phẩm')
     } finally {
       setLoadingState(false)
     }

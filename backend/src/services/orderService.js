@@ -1,39 +1,25 @@
 import { z } from "zod";
 import { prisma } from "../config/db.js";
-import { getFinalPrice } from "./pricing.service.js";
+import { getVariantSellPrice } from "./pricing.service.js";
+import {
+  buildVariantAttributesList,
+  buildVariantDisplayName,
+  deriveLegacyVariantColor,
+  getMainGalleryImageUrl,
+} from "./variantDisplay.service.js";
 
-const normalizeSkuForDisplay = (raw_sku) => {
-  const sku_text = raw_sku?.trim()
-  if (!sku_text) {
-    return null
-  }
-
-  const archived_token_index = sku_text.indexOf('-del-')
-  if (archived_token_index <= 0) {
-    return sku_text
-  }
-
-  return sku_text.slice(0, archived_token_index)
+const variant_include_base = {
+  variant_option_values: {
+    include: {
+      option_value: {
+        include: {
+          option: true,
+          images: { orderBy: { sort_order: "asc" } },
+        },
+      },
+    },
+  },
 }
-
-const buildVariantName = (variant_data) => {
-  const color_text = variant_data?.color?.trim();
-  const sku_text = normalizeSkuForDisplay(variant_data?.sku);
-
-  if (color_text && sku_text) {
-    return `${color_text} - ${sku_text}`;
-  }
-
-  if (color_text) {
-    return color_text;
-  }
-
-  if (sku_text) {
-    return sku_text;
-  }
-
-  return "Default variant";
-};
 
 const createOrderSchema = z.object({
   address: z.string().min(5),
@@ -49,12 +35,13 @@ export const createOrder = async (userId, body) => {
 
   const { address } = parsed.data;
 
-  // Get cart with items
   const cart = await prisma.cart.findUnique({
     where: { user_id: userId },
     include: {
       items: {
-        include: { variant: { include: { product: true } } },
+        include: {
+          variant: { include: { product: true } },
+        },
       },
     },
   });
@@ -66,12 +53,7 @@ export const createOrder = async (userId, body) => {
   }
 
   const total = cart.items.reduce((sum, item) => {
-    const unit_final = getFinalPrice({
-      base_price: item.variant.product.price,
-      discount_price: item.variant.product.discount_price,
-      discount_start: item.variant.product.discount_start,
-      discount_end: item.variant.product.discount_end
-    });
+    const unit_final = getVariantSellPrice(item.variant);
     return sum + unit_final * item.quantity;
   }, 0);
 
@@ -84,12 +66,7 @@ export const createOrder = async (userId, body) => {
         address,
         items: {
           create: cart.items.map((item) => {
-            const unit_final = getFinalPrice({
-              base_price: item.variant.product.price,
-              discount_price: item.variant.product.discount_price,
-              discount_start: item.variant.product.discount_start,
-              discount_end: item.variant.product.discount_end
-            });
+            const unit_final = getVariantSellPrice(item.variant);
             return {
               variant_id: item.variant_id,
               price: unit_final,
@@ -101,7 +78,6 @@ export const createOrder = async (userId, body) => {
       include: { items: true },
     });
 
-    // Clear cart
     await tx.cartItem.deleteMany({ where: { cart_id: cart.cart_id } });
 
     return newOrder;
@@ -121,6 +97,20 @@ export const createOrder = async (userId, body) => {
   };
 };
 
+const map_order_item_public = (i) => {
+  const attrs = buildVariantAttributesList(i.variant)
+  return {
+    variant_id: i.variant_id,
+    product_name: i.variant.product.name,
+    variant_name: buildVariantDisplayName(i.variant),
+    variant_color: deriveLegacyVariantColor(attrs),
+    variant_sku: i.variant.sku || null,
+    image: getMainGalleryImageUrl(i.variant),
+    quantity: i.quantity,
+    price: Number(i.price),
+  }
+}
+
 export const getOrders = async (userId) => {
   const orders = await prisma.order.findMany({
     where: { user_id: userId },
@@ -128,10 +118,7 @@ export const getOrders = async (userId) => {
       items: {
         include: {
           variant: {
-            include: {
-              product: true,
-              images: { where: { is_main: true }, take: 1 },
-            },
+            include: { product: true, ...variant_include_base },
           },
         },
       },
@@ -147,16 +134,7 @@ export const getOrders = async (userId) => {
     address: o.address,
     created_at: o.created_at,
     payment_status: o.payments[0]?.status || "PENDING",
-    items: o.items.map((i) => ({
-      variant_id: i.variant_id,
-      product_name: i.variant.product.name,
-      variant_name: buildVariantName(i.variant),
-      variant_color: i.variant.color || null,
-      variant_sku: i.variant.sku || null,
-      image: i.variant.images[0]?.image_url || null,
-      quantity: i.quantity,
-      price: Number(i.price),
-    })),
+    items: o.items.map(map_order_item_public),
   }));
 };
 
@@ -169,7 +147,7 @@ export const getOrderById = async (userId, orderId) => {
           variant: {
             include: {
               product: { include: { brand: true } },
-              images: { where: { is_main: true }, take: 1 },
+              ...variant_include_base,
             },
           },
         },
@@ -191,20 +169,21 @@ export const getOrderById = async (userId, orderId) => {
     address: order.address,
     created_at: order.created_at,
     payments: order.payments,
-    items: order.items.map((i) => ({
-      variant_id: i.variant_id,
-      product_name: i.variant.product.name,
-      variant_name: buildVariantName(i.variant),
-      variant_color: i.variant.color || null,
-      variant_sku: i.variant.sku || null,
-      brand: i.variant.product.brand?.name || null,
-      image: i.variant.images[0]?.image_url || null,
-      attributes: i.variant.color
-        ? [{ attribute: "Color", value: i.variant.color }]
-        : [],
-      quantity: i.quantity,
-      price: Number(i.price),
-      subtotal: Number(i.price) * i.quantity,
-    })),
+    items: order.items.map((i) => {
+      const attrs = buildVariantAttributesList(i.variant)
+      return {
+        variant_id: i.variant_id,
+        product_name: i.variant.product.name,
+        variant_name: buildVariantDisplayName(i.variant),
+        variant_color: deriveLegacyVariantColor(attrs),
+        variant_sku: i.variant.sku || null,
+        brand: i.variant.product.brand?.name || null,
+        image: getMainGalleryImageUrl(i.variant),
+        attributes: attrs,
+        quantity: i.quantity,
+        price: Number(i.price),
+        subtotal: Number(i.price) * i.quantity,
+      }
+    }),
   };
 };

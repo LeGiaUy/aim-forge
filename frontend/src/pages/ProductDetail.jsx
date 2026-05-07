@@ -10,7 +10,7 @@ import { useProductDetail } from '../hooks/useProductDetail.js'
 function LoadingState() {
   return (
     <section className='space-y-6'>
-      <div className='skeleton h-[360px] w-full rounded-2xl sm:h-[520px]' />
+      <div className='skeleton aspect-square w-full max-w-full rounded-2xl' />
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         <div className='skeleton h-52 w-full rounded-2xl' />
         <div className='skeleton h-52 w-full rounded-2xl' />
@@ -23,14 +23,14 @@ function ErrorState({ message }) {
   return (
     <section className='rounded-2xl border border-red-400/20 bg-red-500/10 p-6 text-center'>
       <h2 className='font-display text-lg font-semibold uppercase tracking-wider text-red-200'>
-        Failed to load product
+        Không thể tải sản phẩm
       </h2>
       <p className='mt-2 text-sm text-red-300'>{message}</p>
       <Link
         to='/'
         className='mt-4 inline-flex rounded-lg border border-red-300/40 px-4 py-2 text-xs font-display uppercase tracking-wider text-red-200 transition hover:bg-red-500/20'
       >
-        Back to home
+        Quay về trang chủ
       </Link>
     </section>
   )
@@ -57,7 +57,7 @@ export default function ProductDetail() {
         to='/'
         className='text-sm font-body text-[#64748b] transition-colors hover:text-[#9f67ff]'
       >
-        ← Back to Home
+        ← Về trang chủ
       </Link>
 
       <div className='mt-6 space-y-10'>
@@ -81,6 +81,7 @@ export default function ProductDetail() {
                 />
 
                 <VariantSelector
+                  product_options={product_data.product_options}
                   variants={product_data.variants}
                   selected_variant={selected_variant}
                   onVariantChange={setSelectedVariant}

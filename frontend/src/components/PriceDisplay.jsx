@@ -31,7 +31,7 @@ export default function PriceDisplay({ selected_variant, product_data }) {
         )}
         {selected_variant?.stock === 0 && (
           <span className='mb-1 rounded-full border border-red-400/40 bg-red-500/10 px-2.5 py-1 text-[10px] font-display font-semibold uppercase tracking-wider text-red-300'>
-            Out of stock
+            Hết hàng
           </span>
         )}
       </div>

@@ -26,7 +26,14 @@ function CartItemRow({
               {item_data.product_name}
             </h2>
             <p className='text-xs text-[#94a3b8]'>{item_data.sku}</p>
-            <p className='text-xs text-[#64748b]'>{item_data.brand || 'No brand'}</p>
+            {(item_data.variant_name || '').trim() ? (
+              <p className='max-w-[40ch] text-xs text-[#a5b4fc] line-clamp-2'>
+                {item_data.variant_name}
+              </p>
+            ) : null}
+            <p className='text-xs text-[#64748b]'>
+              {item_data.brand || 'Không có thương hiệu'}
+            </p>
           </div>
         </div>
 
@@ -64,7 +71,7 @@ function CartItemRow({
             disabled={disable_action}
             className='rounded-lg border border-red-400/30 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-red-300 transition hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50'
           >
-            Remove
+            Xóa
           </button>
         </div>
       </article>
@@ -110,7 +117,7 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!address_text.trim()) {
-      setErrorMessage('Please enter shipping address')
+      setErrorMessage('Vui lòng nhập địa chỉ nhận hàng')
       return
     }
 
@@ -124,7 +131,7 @@ export default function CartPage() {
       const order_data = order_response.data?.data
 
       if (!order_data?.order_id) {
-        throw new Error('Cannot create order')
+        throw new Error('Không thể tạo đơn hàng')
       }
 
       if (payment_method === 'COD') {
@@ -141,12 +148,12 @@ export default function CartPage() {
       const payment_url = payment_response.data?.data?.payment_url
 
       if (!payment_url) {
-        throw new Error('Cannot create VNPAY url')
+        throw new Error('Không thể tạo liên kết VNPAY')
       }
 
       window.location.href = payment_url
     } catch (error) {
-      setErrorMessage(error.message || 'Checkout failed')
+      setErrorMessage(error.message || 'Thanh toán thất bại')
     } finally {
       setSubmitLoading(false)
     }
@@ -156,19 +163,19 @@ export default function CartPage() {
     <main className='mx-auto min-h-screen max-w-6xl px-4 pb-16 pt-28 sm:px-6 lg:px-8'>
       <header className='mb-6 flex items-center justify-between'>
         <h1 className='font-display text-xl font-bold uppercase tracking-wider text-white sm:text-2xl'>
-          Shopping Cart
+          Giỏ hàng
         </h1>
         <Link
           to='/'
           className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8] transition hover:text-[#9f67ff]'
         >
-          Continue Shopping
+          Tiếp tục mua sắm
         </Link>
       </header>
 
       {cart_data.items.length === 0 && !cart_loading && (
         <section className='rounded-2xl border border-white/10 bg-white/5 p-10 text-center'>
-          <p className='text-sm text-[#94a3b8]'>Your cart is empty</p>
+          <p className='text-sm text-[#94a3b8]'>Giỏ hàng của bạn đang trống</p>
         </section>
       )}
 
@@ -189,31 +196,31 @@ export default function CartPage() {
 
           <aside className='h-fit rounded-2xl border border-white/10 bg-white/5 p-5'>
             <h2 className='font-display text-sm font-semibold uppercase tracking-wider text-[#cbd5e1]'>
-              Cart Summary
+              Tóm tắt đơn hàng
             </h2>
             <div className='mt-4 flex items-center justify-between text-sm text-[#94a3b8]'>
-              <span>Items</span>
+              <span>Sản phẩm</span>
               <span>{cart_data.items.length}</span>
             </div>
             <div className='mt-2 flex items-center justify-between font-display text-lg font-bold text-white'>
-              <span>Total</span>
+              <span>Tổng cộng</span>
               <span>{formatVnd(cart_data.total)}</span>
             </div>
             <label className='mt-4 block'>
               <span className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Shipping Address
+                Địa chỉ nhận hàng
               </span>
               <textarea
                 value={address_text}
                 onChange={event => setAddressText(event.target.value)}
                 rows={3}
-                placeholder='Enter your address'
+                placeholder='Nhập địa chỉ của bạn'
                 className='mt-2 w-full rounded-xl border border-white/15 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none ring-[#7c3aed] transition placeholder:text-[#64748b] focus:ring-2'
               />
             </label>
             <fieldset className='mt-4'>
               <legend className='text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-                Payment Method
+                Phương thức thanh toán
               </legend>
               <div className='mt-2 space-y-2'>
                 <label className='flex cursor-pointer items-center gap-2 text-sm text-[#cbd5e1]'>
@@ -234,7 +241,7 @@ export default function CartPage() {
                     checked={payment_method === 'COD'}
                     onChange={event => setPaymentMethod(event.target.value)}
                   />
-                  <span>Cash on Delivery</span>
+                  <span>Thanh toán khi nhận hàng</span>
                 </label>
               </div>
             </fieldset>
@@ -249,7 +256,7 @@ export default function CartPage() {
               disabled={cart_loading || submit_loading}
               className='mt-4 w-full rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:brightness-110'
             >
-              {submit_loading ? 'Processing...' : 'Checkout'}
+              {submit_loading ? 'Đang xử lý...' : 'Thanh toán'}
             </button>
           </aside>
         </section>

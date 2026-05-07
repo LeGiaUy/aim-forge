@@ -51,7 +51,7 @@ export default function ProfilePage() {
           address: next_profile?.address || ''
         })
       } catch (error) {
-        setErrorText(error.message || 'Cannot load profile')
+        setErrorText(error.message || 'Không thể tải hồ sơ')
       } finally {
         setIsLoading(false)
       }
@@ -61,7 +61,7 @@ export default function ProfilePage() {
         const next_orders = orders_response.data?.data || []
         setOrdersData(Array.isArray(next_orders) ? next_orders : [])
       } catch (error) {
-        setOrdersErrorText(error.message || 'Cannot load orders')
+        setOrdersErrorText(error.message || 'Không thể tải đơn hàng')
       } finally {
         setIsLoadingOrders(false)
       }
@@ -89,6 +89,21 @@ export default function ProfilePage() {
     )
   }
 
+  const get_status_label = status_value => {
+    const status_label_map = {
+      PENDING: 'Chờ xử lý',
+      PAID: 'Đã thanh toán',
+      PROCESSING: 'Đang xử lý',
+      SHIPPED: 'Đang giao',
+      COMPLETED: 'Hoàn tất',
+      FAILED: 'Thất bại',
+      CANCELLED: 'Đã hủy',
+      SUCCESS: 'Thành công'
+    }
+
+    return status_label_map[status_value] || status_value || 'Chưa cập nhật'
+  }
+
   const handle_profile_change = event => {
     const { name, value } = event.target
     setProfileForm(prev_state => ({
@@ -111,11 +126,11 @@ export default function ProfilePage() {
     setSuccessText('')
 
     if (!profile_form.username.trim()) {
-      setErrorText('Username is required')
+      setErrorText('Vui lòng nhập tên người dùng')
       return
     }
     if (!/\S+@\S+\.\S+/.test(profile_form.email)) {
-      setErrorText('Invalid email format')
+      setErrorText('Định dạng email không hợp lệ')
       return
     }
 
@@ -130,9 +145,9 @@ export default function ProfilePage() {
       })
       setProfileData(response.data?.data || null)
       await refresh_user()
-      setSuccessText('Profile updated successfully')
+      setSuccessText('Cập nhật hồ sơ thành công')
     } catch (error) {
-      setErrorText(error.message || 'Cannot update profile')
+      setErrorText(error.message || 'Không thể cập nhật hồ sơ')
     } finally {
       setIsUpdatingProfile(false)
     }
@@ -157,9 +172,9 @@ export default function ProfilePage() {
         ...prev_state,
         avatar: avatar_url
       }))
-      setSuccessText('Avatar uploaded. Click "Update profile" to save.')
+      setSuccessText('Tải ảnh đại diện thành công. Nhấn "Cập nhật hồ sơ" để lưu.')
     } catch (error) {
-      setErrorText(error.message || 'Cannot upload avatar')
+      setErrorText(error.message || 'Không thể tải ảnh đại diện')
     } finally {
       setIsUploadingAvatar(false)
       event.target.value = ''
@@ -172,11 +187,11 @@ export default function ProfilePage() {
     setPasswordSuccessText('')
 
     if (!password_form.oldPassword || !password_form.newPassword) {
-      setPasswordErrorText('Please fill all password fields')
+      setPasswordErrorText('Vui lòng nhập đầy đủ các trường mật khẩu')
       return
     }
     if (password_form.newPassword.length < 6) {
-      setPasswordErrorText('New password must be at least 6 characters')
+      setPasswordErrorText('Mật khẩu mới phải có ít nhất 6 ký tự')
       return
     }
 
@@ -187,9 +202,9 @@ export default function ProfilePage() {
         newPassword: password_form.newPassword
       })
       setPasswordForm({ oldPassword: '', newPassword: '' })
-      setPasswordSuccessText('Password changed successfully')
+      setPasswordSuccessText('Đổi mật khẩu thành công')
     } catch (error) {
-      setPasswordErrorText(error.message || 'Cannot change password')
+      setPasswordErrorText(error.message || 'Không thể đổi mật khẩu')
     } finally {
       setIsChangingPassword(false)
     }
@@ -198,37 +213,37 @@ export default function ProfilePage() {
   return (
     <main className='mx-auto min-h-screen max-w-4xl px-6 pb-12 pt-28 text-white'>
       <section className='rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
-        <h1 className='text-2xl font-bold'>My profile</h1>
+        <h1 className='text-2xl font-bold'>Hồ sơ của tôi</h1>
         <div className='mt-4 flex items-center gap-4'>
           {profile_data?.avatar ? (
             <img
               src={profile_data.avatar}
-              alt='Profile avatar'
+              alt='Ảnh đại diện'
               className='h-20 w-20 rounded-full border border-white/20 object-cover'
             />
           ) : (
             <div className='flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/5 text-xs text-[#94a3b8]'>
-              No Avatar
+              Chưa có ảnh
             </div>
           )}
           <div className='text-sm text-[#94a3b8]'>
-            Upload avatar in Edit profile section
+            Tải ảnh đại diện ở phần chỉnh sửa hồ sơ
           </div>
         </div>
         {is_loading ? (
-          <p className='mt-3 text-sm text-[#94a3b8]'>Loading profile...</p>
+          <p className='mt-3 text-sm text-[#94a3b8]'>Đang tải hồ sơ...</p>
         ) : (
           <div className='mt-4 grid gap-3 text-sm text-[#cbd5e1] sm:grid-cols-2'>
-            <p>Username: {profile_data?.username || 'N/A'}</p>
-            <p>Email: {profile_data?.email || 'N/A'}</p>
-            <p>Phone: {profile_data?.phone || 'N/A'}</p>
-            <p>Address: {profile_data?.address || 'N/A'}</p>
+            <p>Tên người dùng: {profile_data?.username || 'Chưa cập nhật'}</p>
+            <p>Email: {profile_data?.email || 'Chưa cập nhật'}</p>
+            <p>Số điện thoại: {profile_data?.phone || 'Chưa cập nhật'}</p>
+            <p>Địa chỉ: {profile_data?.address || 'Chưa cập nhật'}</p>
           </div>
         )}
       </section>
 
       <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
-        <h2 className='text-lg font-semibold'>Edit profile</h2>
+        <h2 className='text-lg font-semibold'>Chỉnh sửa hồ sơ</h2>
         {error_text && (
           <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
             {error_text}
@@ -241,7 +256,7 @@ export default function ProfilePage() {
         )}
 
         <form className='mt-4 grid gap-3' onSubmit={handle_profile_submit}>
-          <label className='text-sm text-[#cbd5e1]'>Profile avatar</label>
+          <label className='text-sm text-[#cbd5e1]'>Ảnh đại diện</label>
           <input
             type='file'
             accept='image/*'
@@ -249,12 +264,12 @@ export default function ProfilePage() {
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#7c3aed] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white'
           />
           {is_uploading_avatar && (
-            <p className='text-xs text-[#94a3b8]'>Uploading avatar...</p>
+            <p className='text-xs text-[#94a3b8]'>Đang tải ảnh đại diện...</p>
           )}
           {profile_form.avatar && (
             <img
               src={profile_form.avatar}
-              alt='Avatar preview'
+              alt='Xem trước ảnh đại diện'
               className='h-20 w-20 rounded-full border border-white/20 object-cover'
             />
           )}
@@ -262,7 +277,7 @@ export default function ProfilePage() {
             name='username'
             value={profile_form.username}
             onChange={handle_profile_change}
-            placeholder='Username'
+            placeholder='Tên người dùng'
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
           />
           <input
@@ -276,14 +291,14 @@ export default function ProfilePage() {
             name='phone'
             value={profile_form.phone}
             onChange={handle_profile_change}
-            placeholder='Phone'
+            placeholder='Số điện thoại'
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
           />
           <input
             name='address'
             value={profile_form.address}
             onChange={handle_profile_change}
-            placeholder='Address'
+            placeholder='Địa chỉ'
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
           />
           <button
@@ -291,13 +306,13 @@ export default function ProfilePage() {
             disabled={is_updating_profile}
             className='rounded-lg bg-[#7c3aed] px-4 py-2 text-sm font-semibold disabled:opacity-60'
           >
-            {is_updating_profile ? 'Updating...' : 'Update profile'}
+            {is_updating_profile ? 'Đang cập nhật...' : 'Cập nhật hồ sơ'}
           </button>
         </form>
       </section>
 
       <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
-        <h2 className='text-lg font-semibold'>Change password</h2>
+        <h2 className='text-lg font-semibold'>Đổi mật khẩu</h2>
         {password_error_text && (
           <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
             {password_error_text}
@@ -315,7 +330,7 @@ export default function ProfilePage() {
             type='password'
             value={password_form.oldPassword}
             onChange={handle_password_change}
-            placeholder='Old password'
+            placeholder='Mật khẩu cũ'
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
           />
           <input
@@ -323,7 +338,7 @@ export default function ProfilePage() {
             type='password'
             value={password_form.newPassword}
             onChange={handle_password_change}
-            placeholder='New password'
+            placeholder='Mật khẩu mới'
             className='rounded-lg border border-white/10 bg-[#020617] px-3 py-2 text-sm'
           />
           <button
@@ -331,13 +346,13 @@ export default function ProfilePage() {
             disabled={is_changing_password}
             className='rounded-lg bg-[#7c3aed] px-4 py-2 text-sm font-semibold disabled:opacity-60'
           >
-            {is_changing_password ? 'Saving...' : 'Change password'}
+            {is_changing_password ? 'Đang lưu...' : 'Đổi mật khẩu'}
           </button>
         </form>
       </section>
 
       <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
-        <h2 className='text-lg font-semibold'>My orders</h2>
+        <h2 className='text-lg font-semibold'>Đơn hàng của tôi</h2>
 
         {orders_error_text && (
           <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
@@ -346,10 +361,10 @@ export default function ProfilePage() {
         )}
 
         {is_loading_orders ? (
-          <p className='mt-3 text-sm text-[#94a3b8]'>Loading orders...</p>
+          <p className='mt-3 text-sm text-[#94a3b8]'>Đang tải đơn hàng...</p>
         ) : orders_data.length === 0 ? (
           <p className='mt-3 text-sm text-[#94a3b8]'>
-            You have no orders yet.
+            Bạn chưa có đơn hàng nào.
           </p>
         ) : (
           <ul className='mt-4 space-y-3'>
@@ -361,13 +376,13 @@ export default function ProfilePage() {
                 <div className='flex flex-wrap items-start justify-between gap-3'>
                   <div className='min-w-0'>
                     <p className='text-sm font-semibold text-white'>
-                      Order #{order_item.order_id}
+                      Đơn hàng #{order_item.order_id}
                     </p>
                     <p className='mt-1 text-xs text-[#94a3b8]'>
                       {new Date(order_item.created_at).toLocaleString('vi-VN')}
                     </p>
                     <p className='mt-1 text-xs text-[#cbd5e1]'>
-                      Total: {formatVnd(order_item.total)}
+                      Tổng tiền: {formatVnd(order_item.total)}
                     </p>
                     {order_item.items?.[0] && (
                       <div className='mt-2 flex items-center gap-2 rounded-lg border border-white/10 bg-[#0f172a]/60 p-2'>
@@ -379,7 +394,7 @@ export default function ProfilePage() {
                           />
                         ) : (
                           <div className='flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-[#111827] text-[9px] text-[#94a3b8]'>
-                            No image
+                            Không ảnh
                           </div>
                         )}
                         <div className='min-w-0'>
@@ -392,7 +407,7 @@ export default function ProfilePage() {
                           </p>
                           {order_item.items.length > 1 && (
                             <p className='text-[11px] text-[#94a3b8]'>
-                              +{order_item.items.length - 1} more item(s)
+                              +{order_item.items.length - 1} sản phẩm khác
                             </p>
                           )}
                         </div>
@@ -403,18 +418,18 @@ export default function ProfilePage() {
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${get_status_class_name(order_item.status)}`}
                     >
-                      Order: {order_item.status}
+                      Đơn: {get_status_label(order_item.status)}
                     </span>
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${get_status_class_name(order_item.payment_status || 'PENDING')}`}
                     >
-                      Payment: {order_item.payment_status || 'PENDING'}
+                      Thanh toán: {get_status_label(order_item.payment_status || 'PENDING')}
                     </span>
                     <Link
                       to={`/profile/orders/${order_item.order_id}`}
                       className='rounded-lg border border-[#7c3aed]/40 bg-[#7c3aed]/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#7c3aed]/20'
                     >
-                      View detail
+                      Xem chi tiết
                     </Link>
                   </div>
                 </div>

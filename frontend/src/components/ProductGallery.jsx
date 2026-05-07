@@ -73,24 +73,26 @@ export default function ProductGallery({
         onTouchMove={event => setTouchEndX(event.targetTouches[0].clientX)}
         onTouchEnd={handleTouchEnd}
       >
-        <div className='relative overflow-hidden rounded-xl bg-[#090912]'>
+        <div
+          className='relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-[#090912]'
+        >
           {selected_image ? (
             <img
               src={selected_image}
               alt={product_name}
               loading='lazy'
-              className='h-[320px] w-full object-cover transition-transform duration-300 group-hover:scale-125 sm:h-[460px]'
+              className='max-h-full max-w-full object-contain transition-transform duration-300 '
             />
           ) : (
-            <div className='flex h-[320px] w-full items-center justify-center text-sm text-[#64748b] sm:h-[460px]'>
-              No image
+            <div className='flex h-full w-full items-center justify-center text-sm text-[#64748b]'>
+              Không có ảnh
             </div>
           )}
         </div>
 
         <button
           type='button'
-          aria-label='Previous image'
+          aria-label='Ảnh trước'
           onClick={() => handleSwipe('prev')}
           className='absolute left-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:border-[#9f67ff] hover:text-[#9f67ff] sm:flex'
         >
@@ -99,7 +101,7 @@ export default function ProductGallery({
 
         <button
           type='button'
-          aria-label='Next image'
+          aria-label='Ảnh tiếp theo'
           onClick={() => handleSwipe('next')}
           className='absolute right-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:border-[#9f67ff] hover:text-[#9f67ff] sm:flex'
         >
@@ -115,7 +117,7 @@ export default function ProductGallery({
             <button
               key={item.image_url}
               type='button'
-              aria-label='Select product image'
+              aria-label='Chọn ảnh sản phẩm'
               onClick={() => onImageSelect(item.image_url)}
               className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border transition ${
                 is_selected
@@ -127,7 +129,7 @@ export default function ProductGallery({
                 src={item.image_url}
                 alt={product_name}
                 loading='lazy'
-                className='h-full w-full object-cover'
+                className='h-full w-full object-contain'
               />
             </button>
           )

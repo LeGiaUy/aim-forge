@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom'
 import { adminUserApi } from '../../../services/adminApi.js'
 
 const USER_STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'BANNED']
+const USER_STATUS_LABELS = {
+  ACTIVE: 'Đang hoạt động',
+  INACTIVE: 'Không hoạt động',
+  BANNED: 'Bị khóa'
+}
 
 export default function UserList() {
   const [users_data, setUsersData] = useState([])
@@ -80,7 +85,7 @@ export default function UserList() {
   return (
     <section className='mx-auto w-full max-w-7xl px-4 py-6 text-white'>
       <header className='mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-        <h1 className='text-2xl font-semibold'>Users</h1>
+        <h1 className='text-2xl font-semibold'>Người dùng</h1>
 
         <div className='flex flex-wrap gap-2'>
           <select
@@ -91,10 +96,10 @@ export default function UserList() {
             }}
             className='rounded-lg border border-white/10 bg-[#0d0d1a] px-3 py-2 text-sm'
           >
-            <option value=''>All status</option>
+            <option value=''>Tất cả trạng thái</option>
             {USER_STATUS_OPTIONS.map(status => (
               <option key={status} value={status}>
-                {status}
+                {USER_STATUS_LABELS[status] || status}
               </option>
             ))}
           </select>
@@ -107,7 +112,7 @@ export default function UserList() {
             }}
             className='rounded-lg border border-white/10 bg-[#0d0d1a] px-3 py-2 text-sm'
           >
-            <option value=''>All roles</option>
+            <option value=''>Tất cả vai trò</option>
             {roles_data.map(role_item => (
               <option key={role_item.role_id} value={role_item.role_name}>
                 {role_item.role_name}
@@ -129,22 +134,22 @@ export default function UserList() {
             <tr>
               <th className='px-4 py-3'>Username</th>
               <th className='px-4 py-3'>Email</th>
-              <th className='px-4 py-3'>Status</th>
-              <th className='px-4 py-3'>Roles</th>
-              <th className='px-4 py-3'>Actions</th>
+              <th className='px-4 py-3'>Trạng thái</th>
+              <th className='px-4 py-3'>Vai trò</th>
+              <th className='px-4 py-3'>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {is_loading ? (
               <tr>
                 <td className='px-4 py-5 text-[#94a3b8]' colSpan={5}>
-                  Loading users...
+                  Đang tải danh sách người dùng...
                 </td>
               </tr>
             ) : users_data.length === 0 ? (
               <tr>
                 <td className='px-4 py-5 text-[#94a3b8]' colSpan={5}>
-                  No users found
+                  Không tìm thấy người dùng
                 </td>
               </tr>
             ) : (
@@ -152,9 +157,11 @@ export default function UserList() {
                 <tr key={user_item.user_id} className='border-t border-white/10'>
                   <td className='px-4 py-3'>{user_item.username}</td>
                   <td className='px-4 py-3'>{user_item.email}</td>
-                  <td className='px-4 py-3'>{user_item.status}</td>
                   <td className='px-4 py-3'>
-                    {(user_item.roles || []).join(', ') || 'N/A'}
+                    {USER_STATUS_LABELS[user_item.status] || user_item.status}
+                  </td>
+                  <td className='px-4 py-3'>
+                    {(user_item.roles || []).join(', ') || 'Chưa có'}
                   </td>
                   <td className='px-4 py-3'>
                     <div className='flex flex-wrap gap-2'>
@@ -170,7 +177,7 @@ export default function UserList() {
                       >
                         {USER_STATUS_OPTIONS.map(status => (
                           <option key={status} value={status}>
-                            {status}
+                            {USER_STATUS_LABELS[status] || status}
                           </option>
                         ))}
                       </select>
@@ -186,7 +193,7 @@ export default function UserList() {
                         }}
                         className='rounded-md border border-white/10 bg-[#0d0d1a] px-2 py-1 text-xs'
                       >
-                        <option value=''>Assign role</option>
+                        <option value=''>Gán vai trò</option>
                         {roles_data.map(role_item => (
                           <option
                             key={role_item.role_id}
@@ -201,7 +208,7 @@ export default function UserList() {
                         to={`/admin/users/${user_item.user_id}`}
                         className='rounded-md bg-[#7c3aed] px-3 py-1 text-xs font-semibold text-white'
                       >
-                        Detail
+                        Chi tiết
                       </Link>
                     </div>
                   </td>
@@ -218,10 +225,10 @@ export default function UserList() {
           onClick={() => setCurrentPage(prev_page => Math.max(prev_page - 1, 1))}
           disabled={pagination_data.page <= 1}
         >
-          Prev
+          Trước
         </button>
         <span className='text-sm text-[#94a3b8]'>
-          Page {pagination_data.page} / {pagination_data.total_pages}
+          Trang {pagination_data.page} / {pagination_data.total_pages}
         </span>
         <button
           className='rounded-md border border-white/10 px-3 py-1 text-sm disabled:opacity-40'
@@ -232,7 +239,7 @@ export default function UserList() {
           }
           disabled={pagination_data.page >= pagination_data.total_pages}
         >
-          Next
+          Sau
         </button>
       </div>
     </section>

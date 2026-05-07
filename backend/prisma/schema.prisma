@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -33,21 +31,26 @@ enum PaymentMethod {
   VNPAY
 }
 
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
 //////////////////////
 // USER & RBAC
 //////////////////////
 
 model User {
-  user_id    Int      @id @default(autoincrement())
-  username   String   @unique
-  email      String   @unique
+  user_id    Int       @id @default(autoincrement())
+  username   String    @unique
+  email      String    @unique
   password   String
   avatar     String?
   phone      String?
   address    String?
-  status     String   @default("ACTIVE")
+  status     String    @default("ACTIVE")
   last_login DateTime?
-  created_at DateTime @default(now())
+  created_at DateTime  @default(now())
 
   roles  UserRole[]
   cart   Cart?
@@ -80,7 +83,7 @@ model UserRole {
 }
 
 model RolePermission {
-  role_id       Int
+  role_id         Int
   permission_id Int
 
   role       Role       @relation(fields: [role_id], references: [role_id])
@@ -94,7 +97,7 @@ model RolePermission {
 //////////////////////
 
 model Category {
-  category_id Int    @id @default(autoincrement())
+  category_id Int     @id @default(autoincrement())
   name        String
   image_url   String?
 
@@ -112,23 +115,53 @@ model Brand {
 }
 
 model Product {
-  product_id  Int     @id @default(autoincrement())
+  product_id  Int      @id @default(autoincrement())
   name        String
   description String?
-  price       Decimal @default(0)
-  discount_price Decimal?
-  discount_start DateTime?
-  discount_end   DateTime?
+  /// Giá tham chiếu cho listing (từ / min); giá thực tế theo ProductVariant.price
+  price       Decimal?
 
   category_id Int?
   brand_id    Int?
-  is_active   Boolean @default(true)
+  is_active   Boolean  @default(true)
 
   category Category? @relation(fields: [category_id], references: [category_id])
   brand    Brand?    @relation(fields: [brand_id], references: [brand_id])
 
-  variants ProductVariant[]
-  specs    ProductAttributeValue[]
+  variants           ProductVariant[]
+  specs              ProductAttributeValue[]
+  product_options    ProductOption[]
+  discount_products  DiscountProduct[]
+}
+
+//////////////////////
+// VARIANT OPTIONS (flexible axes)
+//////////////////////
+
+model ProductOption {
+  option_id   Int @id @default(autoincrement())
+  product_id  Int
+  /// Tên tuỳ chọn hiển thị (vd: Color, Size)
+  name        String
+  sort_order  Int @default(0)
+
+  product       Product              @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  option_values ProductOptionValue[]
+
+  @@index([product_id])
+}
+
+model ProductOptionValue {
+  option_value_id Int    @id @default(autoincrement())
+  option_id       Int
+  value           String
+  sort_order      Int    @default(0)
+
+  option                ProductOption        @relation(fields: [option_id], references: [option_id], onDelete: Cascade)
+  variant_option_values VariantOptionValue[]
+  images                OptionValueImage[]
+
+  @@index([option_id])
 }
 
 //////////////////////
@@ -136,19 +169,85 @@ model Product {
 //////////////////////
 
 model ProductVariant {
-  variant_id Int @id @default(autoincrement())
-  product_id Int
+  variant_id  Int @id @default(autoincrement())
+  product_id  Int
 
-  color     String?
-  sku       String? @unique
-  stock     Int     @default(0)
-  is_active Boolean @default(true)
+  sku           String?  @unique
+  stock         Int      @default(0)
+  /// Giá bán SKU (Shopify-style)
+  price         Decimal  @default(0)
+  /// Giá niêm yết so với giá bán (gạch ngang UI)
+  compare_price Decimal?
+  /// Giá vốn / COGS (tùy chọn)
+  cost_price    Decimal?
+  is_active     Boolean  @default(true)
 
-  product Product @relation(fields: [product_id], references: [product_id])
+  option_value_signature String?
+  options_cache          Json?
 
-  images      VariantImage[]
-  cart_items  CartItem[]
-  order_items OrderItem[]
+  product Product @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  variant_option_values VariantOptionValue[]
+  cart_items            CartItem[]
+  order_items           OrderItem[]
+  discount_variants     DiscountVariant[]
+
+  @@index([product_id])
+  @@unique([product_id, option_value_signature])
+}
+
+model VariantOptionValue {
+  variant_id      Int
+  option_value_id Int
+
+  variant      ProductVariant     @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
+  option_value ProductOptionValue @relation(fields: [option_value_id], references: [option_value_id], onDelete: Restrict)
+
+  @@id([variant_id, option_value_id])
+  @@index([option_value_id])
+}
+
+//////////////////////
+// DISCOUNT (promotions layer)
+//////////////////////
+
+model Discount {
+  discount_id Int          @id @default(autoincrement())
+  name        String
+  type        DiscountType
+  value       Decimal
+  start_at    DateTime
+  end_at      DateTime?
+  is_active   Boolean      @default(true)
+  created_at  DateTime     @default(now())
+
+  products DiscountProduct[]
+  variants DiscountVariant[]
+
+  @@index([start_at])
+  @@index([end_at])
+}
+
+model DiscountProduct {
+  discount_id Int
+  product_id  Int
+
+  discount Discount @relation(fields: [discount_id], references: [discount_id], onDelete: Cascade)
+  product  Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@id([discount_id, product_id])
+  @@index([product_id])
+}
+
+model DiscountVariant {
+  discount_id Int
+  variant_id  Int
+
+  discount Discount       @relation(fields: [discount_id], references: [discount_id], onDelete: Cascade)
+  variant  ProductVariant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
+
+  @@id([discount_id, variant_id])
+  @@index([variant_id])
 }
 
 //////////////////////
@@ -156,7 +255,7 @@ model ProductVariant {
 //////////////////////
 
 model Attribute {
-  attribute_id Int           @id @default(autoincrement())
+  attribute_id Int    @id @default(autoincrement())
   name         String
   category_id  Int?
 
@@ -186,18 +285,20 @@ model ProductAttributeValue {
 }
 
 //////////////////////
-// IMAGES
+// IMAGES (theo giá trị tùy chọn — vd. một màu nhiều ảnh)
 //////////////////////
 
-model VariantImage {
-  image_id   Int @id @default(autoincrement())
-  variant_id Int
+model OptionValueImage {
+  image_id         Int @id @default(autoincrement())
+  option_value_id Int
 
   image_url  String
   is_main    Boolean @default(false)
   sort_order Int     @default(0)
 
-  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+  option_value ProductOptionValue @relation(fields: [option_value_id], references: [option_value_id], onDelete: Cascade)
+
+  @@index([option_value_id])
 }
 
 //////////////////////
@@ -218,7 +319,7 @@ model CartItem {
   quantity   Int
 
   cart    Cart           @relation(fields: [cart_id], references: [cart_id])
-  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
 
   @@id([cart_id, variant_id])
 }
@@ -250,7 +351,7 @@ model OrderItem {
   quantity Int
 
   order   Order          @relation(fields: [order_id], references: [order_id])
-  variant ProductVariant @relation(fields: [variant_id], references: [variant_id])
+  variant ProductVariant @relation(fields: [variant_id], references: [variant_id], onDelete: Restrict)
 
   @@id([order_id, variant_id])
 }

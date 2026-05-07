@@ -43,7 +43,7 @@ export default function BrandList() {
       setForm({ name: '', country: '', image_url: '' })
       fetchBrands()
     } catch (err) {
-      alert(err.message || 'Failed to create brand')
+      alert(err.message || 'Không thể tạo thương hiệu')
     } finally {
       setSubmitting(false)
     }
@@ -63,21 +63,21 @@ export default function BrandList() {
       setEditingForm({ name: '', country: '', image_url: '' })
       fetchBrands()
     } catch (err) {
-      alert(err.message || 'Failed to update brand')
+      alert(err.message || 'Không thể cập nhật thương hiệu')
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async brand_id => {
-    if (!window.confirm('Delete this brand?')) return
+    if (!window.confirm('Bạn có chắc muốn xóa thương hiệu này?')) return
 
     try {
       setSubmitting(true)
       await adminBrandApi.delete(brand_id)
       fetchBrands()
     } catch (err) {
-      alert(err.message || 'Failed to delete brand')
+      alert(err.message || 'Không thể xóa thương hiệu')
     } finally {
       setSubmitting(false)
     }
@@ -95,7 +95,7 @@ export default function BrandList() {
       const image_url = response.data.data?.image_urls?.[0] || ''
       setForm(prev => ({ ...prev, image_url }))
     } catch (err) {
-      alert(err.message || 'Failed to upload brand image')
+      alert(err.message || 'Không thể tải ảnh thương hiệu')
     } finally {
       setSubmitting(false)
     }
@@ -113,7 +113,7 @@ export default function BrandList() {
       const image_url = response.data.data?.image_urls?.[0] || ''
       setEditingForm(prev => ({ ...prev, image_url }))
     } catch (err) {
-      alert(err.message || 'Failed to upload brand image')
+      alert(err.message || 'Không thể tải ảnh thương hiệu')
     } finally {
       setSubmitting(false)
     }
@@ -122,12 +122,14 @@ export default function BrandList() {
   return (
     <div className='mx-auto max-w-6xl space-y-6 px-4 py-8'>
       <div>
-        <h1 className='font-display text-2xl font-bold text-white'>Brands</h1>
-        <p className='text-sm text-[#64748b]'>Manage product brands</p>
+        <h1 className='font-display text-2xl font-bold text-white'>
+          Thương hiệu
+        </h1>
+        <p className='text-sm text-[#64748b]'>Quản lý thương hiệu sản phẩm</p>
       </div>
 
       <section className='admin-card'>
-        <h2 className='admin-section-title'>Create brand</h2>
+        <h2 className='admin-section-title'>Tạo thương hiệu</h2>
         <form
           onSubmit={handleCreate}
           className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_220px_1fr_auto]'
@@ -136,19 +138,19 @@ export default function BrandList() {
             type='text'
             value={form.name}
             onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-            placeholder='Brand name'
+            placeholder='Tên thương hiệu'
             className='admin-input'
           />
           <input
             type='text'
             value={form.country}
             onChange={e => setForm(prev => ({ ...prev, country: e.target.value }))}
-            placeholder='Country (optional)'
+            placeholder='Quốc gia (không bắt buộc)'
             className='admin-input'
           />
           <div className='space-y-2'>
             <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
-              + Upload logo
+              + Tải logo
               <input
                 type='file'
                 accept='image/*'
@@ -161,11 +163,15 @@ export default function BrandList() {
               />
             </label>
             {form.image_url && (
-              <img src={form.image_url} alt='Brand' className='h-10 w-10 rounded object-cover' />
+              <img
+                src={form.image_url}
+                alt='Thương hiệu'
+                className='h-10 w-10 rounded object-cover'
+              />
             )}
           </div>
           <button type='submit' disabled={submitting} className='admin-btn-primary'>
-            Add
+            Thêm
           </button>
         </form>
       </section>
@@ -175,23 +181,23 @@ export default function BrandList() {
           <thead className='border-b border-white/10 bg-white/5'>
             <tr>
               <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>ID</th>
-              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Name</th>
-              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Country</th>
-              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Image</th>
-              <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Actions</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Tên</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Quốc gia</th>
+              <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Ảnh</th>
+              <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>Thao tác</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-white/5'>
             {loading ? (
               <tr>
                 <td colSpan={5} className='px-4 py-10 text-center text-[#64748b]'>
-                  Loading...
+                  Đang tải...
                 </td>
               </tr>
             ) : brands.length === 0 ? (
               <tr>
                 <td colSpan={5} className='px-4 py-10 text-center text-[#64748b]'>
-                  No brands
+                  Chưa có thương hiệu
                 </td>
               </tr>
             ) : (
@@ -230,7 +236,7 @@ export default function BrandList() {
                     {editing_id === item.brand_id ? (
                       <div className='space-y-2'>
                         <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
-                          + Upload logo
+                          + Tải logo
                           <input
                             type='file'
                             accept='image/*'
@@ -245,7 +251,7 @@ export default function BrandList() {
                         {editing_form.image_url && (
                           <img
                             src={editing_form.image_url}
-                            alt='Brand'
+                            alt='Thương hiệu'
                             className='h-10 w-10 rounded object-cover'
                           />
                         )}
@@ -269,7 +275,7 @@ export default function BrandList() {
                             onClick={() => handleUpdate(item.brand_id)}
                             className='rounded-md border border-emerald-500/40 px-3 py-1 text-xs text-emerald-300 transition hover:bg-emerald-500/10'
                           >
-                            Save
+                            Lưu
                           </button>
                           <button
                             type='button'
@@ -283,7 +289,7 @@ export default function BrandList() {
                             }}
                             className='admin-btn-ghost !px-3 !py-1 text-xs'
                           >
-                            Cancel
+                            Hủy
                           </button>
                         </>
                       ) : (
@@ -300,14 +306,14 @@ export default function BrandList() {
                             }}
                             className='admin-btn-ghost !px-3 !py-1 text-xs'
                           >
-                            Edit
+                            Sửa
                           </button>
                           <button
                             type='button'
                             onClick={() => handleDelete(item.brand_id)}
                             className='rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 transition hover:bg-red-500/10'
                           >
-                            Delete
+                            Xóa
                           </button>
                         </>
                       )}
