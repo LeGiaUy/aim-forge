@@ -211,7 +211,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className='mx-auto min-h-screen max-w-4xl px-6 pb-12 pt-28 text-white'>
+    <main className='mx-auto min-h-screen max-w-5xl px-6 pb-12 pt-28 text-white'>
       <section className='rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
         <h1 className='text-2xl font-bold'>Hồ sơ của tôi</h1>
         <div className='mt-4 flex items-center gap-4'>
