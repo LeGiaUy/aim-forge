@@ -9,9 +9,9 @@ const get_drop_percent = (current_value, next_value) => {
 }
 
 const STEP_CONFIG = [
-  { key: 'created', label: 'Created' },
-  { key: 'paid', label: 'Paid' },
-  { key: 'completed', label: 'Completed' }
+  { key: 'created', label: 'Đã tạo' },
+  { key: 'paid', label: 'Đã thanh toán' },
+  { key: 'completed', label: 'Hoàn tất' }
 ]
 
 export default function FunnelStats({ funnel_data }) {
@@ -24,7 +24,7 @@ export default function FunnelStats({ funnel_data }) {
 
   return (
     <section className='rounded-xl border border-white/10 bg-[#101225] p-4 shadow-lg'>
-      <h2 className='text-base font-semibold text-white'>Conversion Funnel</h2>
+      <h2 className='text-base font-semibold text-white'>Phễu chuyển đổi</h2>
 
       <div className='mt-4 grid grid-cols-1 gap-3 md:grid-cols-3'>
         {STEP_CONFIG.map(step_item => (
@@ -44,12 +44,14 @@ export default function FunnelStats({ funnel_data }) {
 
       <div className='mt-4 grid grid-cols-1 gap-3 md:grid-cols-2'>
         <p className='rounded-lg border border-white/10 bg-[#0b0d1d] p-3 text-sm text-slate-300'>
-          Created → Paid: {format_percent(funnel_data?.conversion?.createdToPaid)}
-          {' '}| Drop: {format_percent(drop_created_to_paid)}
+          Đã tạo → Đã thanh toán:{' '}
+          {format_percent(funnel_data?.conversion?.createdToPaid)}
+          {' '}| Hủy: {format_percent(drop_created_to_paid)}
         </p>
         <p className='rounded-lg border border-white/10 bg-[#0b0d1d] p-3 text-sm text-slate-300'>
-          Paid → Completed:{' '}
-          {format_percent(funnel_data?.conversion?.paidToCompleted)} | Drop:{' '}
+          Đã thanh toán → Hoàn tất:{' '}
+          {format_percent(funnel_data?.conversion?.paidToCompleted)}
+          {' '}| Hủy:{' '}
           {format_percent(drop_paid_to_completed)}
         </p>
       </div>

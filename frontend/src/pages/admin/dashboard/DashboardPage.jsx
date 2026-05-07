@@ -28,7 +28,7 @@ const get_error_message = error_value => {
   return (
     error_value?.response?.data?.message ||
     error_value?.message ||
-    'Cannot load dashboard data'
+    'Không thể tải dữ liệu tổng quan'
   )
 }
 
@@ -97,15 +97,15 @@ export default function DashboardPage() {
     <section className='mx-auto w-full max-w-7xl space-y-4 px-4 py-5 lg:px-6'>
       <header className='flex flex-col gap-3 rounded-xl border border-white/10 bg-[#101225] p-4 shadow-lg lg:flex-row lg:items-end lg:justify-between'>
         <div>
-          <h1 className='text-xl font-bold text-white'>Admin Dashboard</h1>
+          <h1 className='text-xl font-bold text-white'>Tổng quan quản trị</h1>
           <p className='mt-1 text-sm text-slate-400'>
-            Real-time statistics for ecommerce operations
+            Thống kê vận hành thương mại điện tử theo thời gian thực
           </p>
         </div>
 
         <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
           <label className='text-xs text-slate-300'>
-            From date
+            Từ ngày
             <input
               type='date'
               value={from_date}
@@ -114,7 +114,7 @@ export default function DashboardPage() {
             />
           </label>
           <label className='text-xs text-slate-300'>
-            To date
+            Đến ngày
             <input
               type='date'
               value={to_date}
@@ -123,14 +123,14 @@ export default function DashboardPage() {
             />
           </label>
           <label className='text-xs text-slate-300'>
-            Group by
+            Nhóm theo
             <select
               value={group_by}
               onChange={event_data => setGroupBy(event_data.target.value)}
               className='mt-1 w-full rounded-lg border border-white/15 bg-[#0b0d1d] px-3 py-2 text-sm text-white outline-none focus:border-violet-400'
             >
-              <option value='day'>Day</option>
-              <option value='month'>Month</option>
+              <option value='day'>Ngày</option>
+              <option value='month'>Tháng</option>
             </select>
           </label>
         </div>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
 
       {is_loading && (
         <p className='rounded-xl border border-white/10 bg-[#101225] p-4 text-sm text-slate-300'>
-          Loading dashboard data...
+          Đang tải dữ liệu tổng quan...
         </p>
       )}
 

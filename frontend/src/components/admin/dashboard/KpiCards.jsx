@@ -10,22 +10,22 @@ const format_percent = value => `${Number(value || 0).toFixed(2)}%`
 const KPI_CARD_LIST = [
   {
     key: 'revenue',
-    label: 'Revenue',
+    label: 'Doanh thu',
     formatter: format_currency
   },
   {
     key: 'totalOrders',
-    label: 'Orders',
+    label: 'Đơn hàng',
     formatter: value => value || 0
   },
   {
     key: 'conversionRate',
-    label: 'Conversion Rate',
+    label: 'Tỷ lệ chuyển đổi',
     formatter: format_percent
   },
   {
     key: 'aov',
-    label: 'AOV',
+    label: 'Giá trị đơn trung bình',
     formatter: format_currency
   }
 ]
