@@ -7,6 +7,10 @@ import CreateVariantMatrixPanel from '../../../components/admin/create/CreateVar
 import { useProductForm } from '../../../hooks/useProductForm.js'
 import { adminProductApi } from '../../../services/adminApi.js'
 import {
+  format_price_display,
+  normalize_price_input
+} from '../../../utils/priceInput.js'
+import {
   axes_to_product_options,
   regenerate_variants_matrix,
 } from '../../../utils/variantMatrixHelpers.js'
@@ -277,11 +281,12 @@ export default function ProductCreate() {
                 Đồng thời dùng làm giá bán gợi ý cho các biến thể mới được sinh ra.
               </p>
               <input
-                type='number'
-                min='0'
-                step='1'
-                value={form.price}
-                onChange={e => handleFormChange('price', e.target.value)}
+                type='text'
+                inputMode='numeric'
+                value={format_price_display(form.price)}
+                onChange={e =>
+                  handleFormChange('price', normalize_price_input(e.target.value))
+                }
                 className='admin-input w-full max-w-md'
                 placeholder='vd. 1590000 — có thể để trống'
               />

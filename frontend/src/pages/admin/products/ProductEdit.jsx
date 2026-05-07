@@ -5,6 +5,10 @@ import ProductOptionsEditor from '../../../components/admin/ProductOptionsEditor
 import VariantTable from '../../../components/admin/VariantTable.jsx'
 import { useProductForm } from '../../../hooks/useProductForm.js'
 import { adminProductApi } from '../../../services/adminApi.js'
+import {
+  format_price_display,
+  normalize_price_input
+} from '../../../utils/priceInput.js'
 
 export default function ProductEdit() {
   const { id } = useParams()
@@ -212,11 +216,12 @@ export default function ProductEdit() {
                 giá biến thể.
               </p>
               <input
-                type='number'
-                min='0'
-                step='1'
-                value={form.price}
-                onChange={e => handleFormChange('price', e.target.value)}
+                type='text'
+                inputMode='numeric'
+                value={format_price_display(form.price)}
+                onChange={e =>
+                  handleFormChange('price', normalize_price_input(e.target.value))
+                }
                 className='admin-input w-full max-w-md'
               />
             </div>

@@ -1,10 +1,14 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useRef, useState } from 'react'
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { useForm } from 'react-hook-form'
+import {
+  format_price_display,
+  normalize_price_input
+} from '../../../utils/priceInput.js'
 import { combo_key_from_labels, auto_variant_sku } from '../../../utils/variantMatrixHelpers.js'
 
 /** Một ô input — tránh rerender không cần khi chỉ các hàng khác đổi */
@@ -15,15 +19,27 @@ const MemoInput = memo(function MemoInput({
   step,
   value,
   on_change_commit,
+  use_thousand_separator = false,
 }) {
   return (
     <input
-      type='number'
+      type='text'
+      inputMode='numeric'
       aria-label={aria_label}
       min={min}
       step={step}
-      value={value}
-      onChange={e => on_change_commit(e.target.value)}
+      value={
+        use_thousand_separator ?
+          format_price_display(value)
+        : value
+      }
+      onChange={e =>
+        on_change_commit(
+          use_thousand_separator ?
+            normalize_price_input(e.target.value)
+          : e.target.value
+        )
+      }
       className={input_class_name}
     />
   )
@@ -49,13 +65,16 @@ export default function CreateVariantMatrixPanel({
   const [selected_row_indices, set_selected_row_indices] = useState(
     () => new Set()
   )
+  const visible_rows_ref = useRef([])
+  const selected_row_indices_ref = useRef(selected_row_indices)
 
-  const { register, getValues, reset } = useForm({
+  const { register, getValues, reset, watch, setValue } = useForm({
     defaultValues: {
       bulk_price: '',
       bulk_stock: '',
     },
   })
+  const bulk_price_value = watch('bulk_price')
 
   const enriched = useMemo(
     () =>
@@ -115,6 +134,9 @@ export default function CreateVariantMatrixPanel({
     return counter
   }, [visible_rows, selected_row_indices])
 
+  visible_rows_ref.current = visible_rows
+  selected_row_indices_ref.current = selected_row_indices
+
   const toggle_row = useCallback(row_index => {
     set_selected_row_indices(prev_set => {
       const next_set = new Set(prev_set)
@@ -125,11 +147,13 @@ export default function CreateVariantMatrixPanel({
   }, [])
 
   const toggle_visible_all = useCallback(() => {
-    const all_labels = visible_rows.map(row_item => row_item.row_index)
+    const visible_rows_now = visible_rows_ref.current
+    const selected_indices_now = selected_row_indices_ref.current
+    const all_labels = visible_rows_now.map(row_item => row_item.row_index)
     const every_on =
       all_labels.length > 0 &&
       all_labels.every(label_index =>
-        selected_row_indices.has(label_index)
+        selected_indices_now.has(label_index)
       )
     set_selected_row_indices(prev_set => {
       const next_set = new Set(prev_set)
@@ -140,7 +164,7 @@ export default function CreateVariantMatrixPanel({
       }
       return next_set
     })
-  }, [visible_rows, selected_row_indices])
+  }, [])
 
   const apply_bulk_to_indices = useCallback(
     target_indices => {
@@ -277,6 +301,7 @@ export default function CreateVariantMatrixPanel({
                   ''
                 : row.original.variant.price
               }
+              use_thousand_separator
               on_change_commit={raw =>
                 patch_variant_fields(prev_list =>
                   prev_list.map((v_item, li) =>
@@ -341,14 +366,7 @@ export default function CreateVariantMatrixPanel({
           size: 160,
         },
       ].filter(Boolean),
-    [
-      axes,
-      toggle_visible_all,
-      visible_rows,
-      selected_row_indices,
-      toggle_row,
-      patch_variant_fields,
-    ]
+    [axes, toggle_visible_all, toggle_row, patch_variant_fields]
   )
 
   const table_instance = useReactTable({
@@ -378,9 +396,17 @@ export default function CreateVariantMatrixPanel({
         <div>
           <label className='admin-label mb-1 block'>Giá bán</label>
           <input
-            type='number'
-            min='0'
+            type='text'
+            inputMode='numeric'
             {...register('bulk_price')}
+            value={format_price_display(bulk_price_value)}
+            onChange={event => {
+              setValue(
+                'bulk_price',
+                normalize_price_input(event.target.value),
+                { shouldDirty: true }
+              )
+            }}
             className='admin-input w-32'
           />
         </div>

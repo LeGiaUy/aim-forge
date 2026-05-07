@@ -1,4 +1,8 @@
 import AdminAutosizeTextarea from './AdminAutosizeTextarea.jsx'
+import {
+  format_price_display,
+  normalize_price_input
+} from '../../utils/priceInput.js'
 
 /**
  * Bảng biến thể: combo tùy chọn, SKU, giá, tồn (ảnh theo giá trị trục đầu).
@@ -118,23 +122,31 @@ export default function VariantTable({
               </td>
               <td className='px-4 py-3 align-top'>
                 <input
-                  type='number'
-                  min='0'
-                  step='1'
-                  value={v.price ?? ''}
-                  onChange={e => onRowChange(vi, 'price', e.target.value)}
+                  type='text'
+                  inputMode='numeric'
+                  value={format_price_display(v.price ?? '')}
+                  onChange={e =>
+                    onRowChange(
+                      vi,
+                      'price',
+                      normalize_price_input(e.target.value)
+                    )
+                  }
                   placeholder='0'
                   className='admin-input w-28 min-w-[7rem]'
                 />
               </td>
               <td className='px-4 py-3 align-top'>
                 <input
-                  type='number'
-                  min='0'
-                  step='1'
-                  value={v.compare_price ?? ''}
+                  type='text'
+                  inputMode='numeric'
+                  value={format_price_display(v.compare_price ?? '')}
                   onChange={e =>
-                    onRowChange(vi, 'compare_price', e.target.value)
+                    onRowChange(
+                      vi,
+                      'compare_price',
+                      normalize_price_input(e.target.value)
+                    )
                   }
                   placeholder='—'
                   className='admin-input w-28 min-w-[7rem]'
@@ -142,11 +154,16 @@ export default function VariantTable({
               </td>
               <td className='px-4 py-3 align-top'>
                 <input
-                  type='number'
-                  min='0'
-                  step='1'
-                  value={v.cost_price ?? ''}
-                  onChange={e => onRowChange(vi, 'cost_price', e.target.value)}
+                  type='text'
+                  inputMode='numeric'
+                  value={format_price_display(v.cost_price ?? '')}
+                  onChange={e =>
+                    onRowChange(
+                      vi,
+                      'cost_price',
+                      normalize_price_input(e.target.value)
+                    )
+                  }
                   placeholder='—'
                   className='admin-input w-28 min-w-[7rem]'
                 />
