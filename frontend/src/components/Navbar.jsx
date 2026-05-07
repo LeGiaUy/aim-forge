@@ -31,7 +31,6 @@ const navLinks = [
   { label: 'Lót chuột', to: '/lot-chuot' },
   {
     label: 'Phụ kiện',
-    to: '/phu-kien',
     children: [
       { label: 'Feet chuột', to: '/phu-kien/feet-chuot' },
       { label: 'Grip tape', to: '/phu-kien/grip-tape' },

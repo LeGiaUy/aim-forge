@@ -152,7 +152,6 @@ export default function VariantSelector({
                       <button
                         key={`${attribute_name}-${value_item.value}`}
                         type='button'
-                        disabled={out}
                         onClick={() => matched && onVariantChange(matched)}
                         className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border transition ${
                           is_selected
@@ -160,7 +159,7 @@ export default function VariantSelector({
                             : 'border-white/10 hover:border-cyan-400/60'
                         } ${
                           out
-                            ? 'cursor-not-allowed opacity-45'
+                            ? 'cursor-pointer opacity-45'
                             : 'cursor-pointer'
                         }`}
                         title={value_item.value}
@@ -179,13 +178,12 @@ export default function VariantSelector({
                     <button
                       key={`${attribute_name}-${value_item.value}`}
                       type='button'
-                      disabled={out}
                       onClick={() => matched && onVariantChange(matched)}
                       className={`rounded-lg border px-3 py-2 text-xs font-display uppercase tracking-wide transition ${
                         is_selected
                           ? 'border-[#9f67ff] bg-[#7c3aed]/20 text-white'
                           : 'border-white/15 bg-white/5 text-[#cbd5e1] hover:border-cyan-400/60'
-                      } ${out ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'}`}
+                      } ${out ? 'cursor-pointer opacity-45' : 'cursor-pointer'}`}
                     >
                       {value_item.value}
                     </button>

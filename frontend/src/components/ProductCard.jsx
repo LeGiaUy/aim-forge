@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { useCart } from '../context/CartContext.jsx'
 import { formatVnd } from '../utils/currency.js'
-
-const CartPlusIcon = () => (
-  <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
-    <circle cx='9' cy='21' r='1' /><circle cx='20' cy='21' r='1' />
-    <path d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6' />
-    <line x1='12' y1='11' x2='12' y2='17' /><line x1='9' y1='14' x2='15' y2='14' />
-  </svg>
-)
 
 function ImageFallback({ name }) {
   return (
@@ -33,8 +23,6 @@ function ImageFallback({ name }) {
 
 /** Card sản phẩm grid: hiển thị giá từ API (final_price, discount) — không tin giá frontend */
 export default function ProductCard({ product, index = 0 }) {
-  const { is_authenticated } = useAuth()
-  const { addToCart } = useCart()
   const {
     product_id,
     name,
@@ -43,7 +31,6 @@ export default function ProductCard({ product, index = 0 }) {
   } = product
   const [imgError, setImgError] = useState(false)
   const [brand_badge_img_failed, setBrandBadgeImgFailed] = useState(false)
-  const [added, setAdded] = useState(false)
 
   useEffect(() => {
     setBrandBadgeImgFailed(false)
@@ -61,22 +48,19 @@ export default function ProductCard({ product, index = 0 }) {
     final_price < original_price
 
   const imageUrl = representative_variant?.main_image?.image_url
-  const can_add = Boolean(representative_variant?.variant_id) && is_authenticated
-  const out_of_stock = (representative_variant?.stock || 0) <= 0
-
-  const handleAddToCart = async e => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!can_add || out_of_stock) return
-
-    await addToCart({
-      variant_id: representative_variant.variant_id,
-      quantity: 1
-    })
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
-  }
+  const variant_list = Array.isArray(product.variants) ? product.variants : []
+  const total_stock_value = Number(product.total_stock)
+  const fallback_stock_value = Number(product.stock)
+  const has_any_in_stock =
+    typeof product.in_stock === 'boolean'
+      ? product.in_stock
+      : Number.isFinite(total_stock_value)
+        ? total_stock_value > 0
+        : variant_list.length
+          ? variant_list.some(variant_item => (variant_item?.stock || 0) > 0)
+          : Number.isFinite(fallback_stock_value)
+            ? fallback_stock_value > 0
+            : (representative_variant?.stock || 0) > 0
 
   return (
     <article
@@ -102,37 +86,6 @@ export default function ProductCard({ product, index = 0 }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-60" />
 
-          <button
-            id={`add-to-cart-image-${product_id}`}
-            onClick={handleAddToCart}
-            aria-label={`Thêm ${name} vào giỏ`}
-            className={`absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-display font-semibold
-                        uppercase tracking-wider transition-all duration-200
-                        ${!is_authenticated || out_of_stock
-                          ? 'cursor-not-allowed border border-white/20 bg-white/10 text-[#64748b]'
-                          : added
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                            : 'bg-[#7c3aed]/85 text-[#f8fafc] border border-[#7c3aed]/40 hover:bg-[#7c3aed] hover:border-[#7c3aed]/70'
-                        }`}
-            disabled={!is_authenticated || out_of_stock}
-          >
-            {added ? (
-              <>
-                <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' aria-hidden='true'>
-                  <polyline points='20 6 9 17 4 12' />
-                </svg>
-                Đã thêm
-              </>
-            ) : (
-              <>
-                <CartPlusIcon />
-                {is_authenticated
-                  ? (out_of_stock ? 'Hết hàng' : 'Thêm')
-                  : 'Đăng nhập'}
-              </>
-            )}
-          </button>
-
           {brand && (
             <div
               className='absolute left-3 top-3 flex max-w-[min(11rem,calc(100%-5rem))] items-center gap-1.5 rounded px-2 py-1 text-[10px] font-display font-bold uppercase tracking-wider'
@@ -150,14 +103,20 @@ export default function ProductCard({ product, index = 0 }) {
             </div>
           )}
 
-          {representative_variant?.stock > 0 && (
-            <div className="absolute top-3 right-3 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] text-emerald-400 font-display font-semibold uppercase tracking-wider">
-                Còn hàng
-              </span>
-            </div>
-          )}
+          <div className='absolute top-3 right-3 flex items-center gap-1.5'>
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                has_any_in_stock ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
+              }`}
+            />
+            <span
+              className={`text-[10px] font-display font-semibold uppercase tracking-wider ${
+                has_any_in_stock ? 'text-emerald-400' : 'text-red-300'
+              }`}
+            >
+              {has_any_in_stock ? 'Còn hàng' : 'Hết hàng'}
+            </span>
+          </div>
         </div>
       </Link>
 
