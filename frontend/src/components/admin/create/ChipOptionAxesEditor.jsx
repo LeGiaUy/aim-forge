@@ -44,19 +44,22 @@ function ValueGallerySection({
   upload_resolver,
   upload_busy
 }) {
-  const normalized = urls.length ? urls : [''];
+  const normalized = urls.length ? urls : ['']
+  const preview_urls = normalized
+    .map(item => String(item ?? '').trim())
+    .filter(Boolean)
 
   /** Ghi một URL và cập nhật mảng (bỏ dòng trắng nếu còn dòng khác) */
   const handle_row_change = useCallback(
     (url_index, next_raw) => {
       const next = normalized.map((u, ii) =>
         ii === url_index ? next_raw : u
-      );
-      const trimmed = next.map(u => String(u ?? '').trim());
-      const nonempty = trimmed.filter(Boolean);
+      )
+      const trimmed = next.map(u => String(u ?? '').trim())
+      const nonempty = trimmed.filter(Boolean)
       on_urls_change(
         nonempty.length ? trimmed : trimmed.map(() => '')
-      );
+      )
     },
     [normalized, on_urls_change]
   )
@@ -65,12 +68,12 @@ function ValueGallerySection({
   const handle_remove_row = useCallback(
     url_index => {
       if (normalized.length <= 1) {
-        on_urls_change([]);
-        return;
+        on_urls_change([])
+        return
       }
       on_urls_change(
         normalized.filter((_u, ii) => ii !== url_index)
-      );
+      )
     },
     [normalized, on_urls_change]
   )
@@ -82,17 +85,17 @@ function ValueGallerySection({
   /** Tải lên CDN / storage, nối URL vào nhãn này */
   const handle_file_input = useCallback(
     async e => {
-      const files = Array.from(e.target.files || []);
-      e.target.value = '';
-      if (!files.length || !upload_resolver) return;
+      const files = Array.from(e.target.files || [])
+      e.target.value = ''
+      if (!files.length || !upload_resolver) return
       try {
-        const got = await upload_resolver(files);
+        const got = await upload_resolver(files)
         const merged =
-          [...normalized.map(u => String(u).trim()), ...got];
-        const clean = merged.filter(Boolean);
-        on_urls_change(clean.length ? merged : []);
+          [...normalized.map(u => String(u).trim()), ...got]
+        const clean = merged.filter(Boolean)
+        on_urls_change(clean.length ? merged : [])
       } catch {
-        console.error('gallery upload failed');
+        console.error('gallery upload failed')
       }
     },
     [normalized, on_urls_change, upload_resolver]
@@ -115,16 +118,28 @@ function ValueGallerySection({
           />
         ))}
       </div>
-      <div className='mt-2 flex flex-wrap items-center gap-3'>
+      {!!preview_urls.length && (
+        <div className='mt-2 flex flex-wrap gap-2'>
+          {preview_urls.map(preview_url => (
+            <img
+              key={`${value_label}-${preview_url}`}
+              src={preview_url}
+              alt={value_label}
+              className='h-14 w-14 rounded-md object-cover'
+            />
+          ))}
+        </div>
+      )}
+      <div className='mt-2 flex flex-wrap items-start gap-3'>
         <button
           type='button'
           onClick={handle_add_blank}
-          className='text-xs text-[#9f67ff] hover:text-[#c4b5fd]'
+          className='self-start text-xs text-[#9f67ff] hover:text-[#c4b5fd]'
         >
           + Thêm ô URL
         </button>
         {upload_resolver && (
-          <label className='cursor-pointer text-xs text-cyan-300 hover:text-cyan-200'>
+          <label className='inline-flex self-start cursor-pointer text-xs text-cyan-300 hover:text-cyan-200'>
             {upload_busy ? 'Đang tải…' : '+ Tải ảnh lên'}
             <input
               type='file'
@@ -160,7 +175,7 @@ function OptionAxisRow({
   const tags = axis.values.filter(v => String(v).trim())
 
   /** Map URL theo nhãn; trục không phải gallery vẫn nhận object rỗng */
-  const value_images = axis.value_images || {};
+  const value_images = axis.value_images || {}
 
   const commit_tag = useCallback(() => {
     const t = draft_value.trim()
@@ -183,9 +198,9 @@ function OptionAxisRow({
         gallery_axis_index === axis_index &&
         value_images[value_to_remove]
       ) {
-        const next_vis = { ...value_images };
-        delete next_vis[value_to_remove];
-        bump_value_images(axis_index, next_vis);
+        const next_vis = { ...value_images }
+        delete next_vis[value_to_remove]
+        bump_value_images(axis_index, next_vis)
       }
     },
     [
@@ -201,15 +216,15 @@ function OptionAxisRow({
   /** Cập nhật mảng URL cho một nhãn */
   const set_urls_for_tag = useCallback(
     (tag, next_urls) => {
-      const cleaned = next_urls.map(s => String(s ?? '').trim());
-      const next_vis = { ...value_images };
-      const kept = cleaned.filter(Boolean);
+      const cleaned = next_urls.map(s => String(s ?? '').trim())
+      const next_vis = { ...value_images }
+      const kept = cleaned.filter(Boolean)
       if (!kept.length) {
-        delete next_vis[tag];
+        delete next_vis[tag]
       } else {
-        next_vis[tag] = kept;
+        next_vis[tag] = kept
       }
-      bump_value_images(axis_index, next_vis);
+      bump_value_images(axis_index, next_vis)
     },
     [axis_index, bump_value_images, value_images]
   )
@@ -337,10 +352,10 @@ export default function ChipOptionAxesEditor({
 
   const wrapped_upload = useCallback(
     async files => {
-      if (!gallery_upload_resolver) return [];
+      if (!gallery_upload_resolver) return []
       set_gallery_upload_loading(true)
       try {
-        return await gallery_upload_resolver(files);
+        return await gallery_upload_resolver(files)
       } finally {
         set_gallery_upload_loading(false)
       }
@@ -352,22 +367,22 @@ export default function ChipOptionAxesEditor({
     (axis_index, name) => {
       const next = axes.map((a, i) =>
         i === axis_index ? { ...a, name } : a
-      );
-      on_axes_change(next);
+      )
+      on_axes_change(next)
     },
     [axes, on_axes_change]
   )
 
   const handle_values_change = useCallback(
     (axis_index, values) => {
-      const prev_axis = axes[axis_index];
-      const next_vis = {};
+      const prev_axis = axes[axis_index]
+      const next_vis = {}
       values.forEach(t => {
-        const key = String(t).trim();
+        const key = String(t).trim()
         if (
           prev_axis?.value_images &&
           prev_axis.value_images[key]
-        ) next_vis[key] = prev_axis.value_images[key];
+        ) next_vis[key] = prev_axis.value_images[key]
       })
       const next = axes.map((a, i) =>
         i === axis_index ?
@@ -380,8 +395,8 @@ export default function ChipOptionAxesEditor({
               : a.value_images,
           }
         : a
-      );
-      on_axes_change(next);
+      )
+      on_axes_change(next)
     },
     [axes, gallery_axis_index, on_axes_change]
   )

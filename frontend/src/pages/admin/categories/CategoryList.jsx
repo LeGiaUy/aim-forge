@@ -136,7 +136,14 @@ export default function CategoryList() {
             placeholder='Tên danh mục'
             className='admin-input flex-1'
           />
-          <div className='space-y-2'>
+          <div className='flex min-h-10 items-center gap-2'>
+            {!!form.image_url && (
+              <img
+                src={form.image_url}
+                alt='Danh mục'
+                className='h-10 w-10 rounded object-cover'
+              />
+            )}
             <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
               + Tải logo
               <input
@@ -150,15 +157,12 @@ export default function CategoryList() {
                 }}
               />
             </label>
-            {form.image_url && (
-              <img
-                src={form.image_url}
-                alt='Danh mục'
-                className='h-10 w-10 rounded object-cover'
-              />
-            )}
           </div>
-          <button type='submit' disabled={submitting} className='admin-btn-primary'>
+          <button
+            type='submit'
+            disabled={submitting}
+            className='admin-btn-primary self-start'
+          >
             Thêm
           </button>
         </form>
@@ -208,7 +212,14 @@ export default function CategoryList() {
                   </td>
                   <td className='px-4 py-3'>
                     {editing_id === item.category_id ? (
-                      <div className='space-y-2'>
+                      <div className='flex min-h-10 items-center gap-2'>
+                        {!!editing_form.image_url && (
+                          <img
+                            src={editing_form.image_url}
+                            alt='Danh mục'
+                            className='h-10 w-10 rounded object-cover'
+                          />
+                        )}
                         <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
                           + Tải logo
                           <input
@@ -222,13 +233,6 @@ export default function CategoryList() {
                             }}
                           />
                         </label>
-                        {editing_form.image_url && (
-                          <img
-                            src={editing_form.image_url}
-                            alt='Danh mục'
-                            className='h-10 w-10 rounded object-cover'
-                          />
-                        )}
                       </div>
                     ) : item.image_url ? (
                       <img

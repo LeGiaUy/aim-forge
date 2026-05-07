@@ -49,10 +49,16 @@ export default function ProductOptionsEditor({
   /** Một ô URL trong block gallery */
   const render_url_slots = (opt_i, val_i, val) => {
     const slots = slots_for_urls(val)
+    const preview_urls = slots
+      .map(item => String(item ?? '').trim())
+      .filter(Boolean)
     return (
       <div className='mt-2 space-y-2 rounded-md border border-white/10 bg-black/20 p-2'>
         {slots.map((ur, ii) => (
-          <div key={`${opt_i}-${val_i}-u-${ii}`} className='flex gap-2'>
+          <div
+            key={`${opt_i}-${val_i}-u-${ii}`}
+            className='flex items-start gap-2'
+          >
             {!readonly ?
               (
                 <>
@@ -84,7 +90,7 @@ export default function ProductOptionsEditor({
                         slots.filter((_skip, ij) => ij !== ii),
                       )
                     }}
-                    className='shrink-0 text-[#f87171] disabled:opacity-30'
+                    className='shrink-0 self-start text-[#f87171] disabled:opacity-30'
                   >
                     ✕
                   </button>
@@ -101,18 +107,30 @@ export default function ProductOptionsEditor({
             : null}
           </div>
         ))}
+        {!!preview_urls.length && (
+          <div className='flex flex-wrap gap-2'>
+            {preview_urls.map(preview_url => (
+              <img
+                key={`${opt_i}-${val_i}-preview-${preview_url}`}
+                src={preview_url}
+                alt={val.value || 'Mau'}
+                className='h-14 w-14 rounded-md object-cover'
+              />
+            ))}
+          </div>
+        )}
         {!readonly ?
           <>
             <button
               type='button'
               onClick={() => commit_urls(opt_i, val_i, [...slots, ''])}
-              className='text-[11px] text-[#9f67ff] hover:text-[#c4b5fd]'
+              className='self-start text-[11px] text-[#9f67ff] hover:text-[#c4b5fd]'
             >
               + Thêm URL ảnh
             </button>
             {gallery_upload_resolver ?
               (
-                <label className='inline-flex cursor-pointer text-[11px] text-cyan-300'>
+                <label className='inline-flex self-start cursor-pointer text-[11px] text-cyan-300'>
                   {gallery_upload_loading ? 'Đang tải…' : '+ Upload ảnh'}
                   <input
                     type='file'

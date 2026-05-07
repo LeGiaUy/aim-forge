@@ -148,7 +148,14 @@ export default function BrandList() {
             placeholder='Quốc gia (không bắt buộc)'
             className='admin-input'
           />
-          <div className='space-y-2'>
+          <div className='flex min-h-10 items-center gap-2'>
+            {!!form.image_url && (
+              <img
+                src={form.image_url}
+                alt='Thương hiệu'
+                className='h-10 w-10 rounded object-cover'
+              />
+            )}
             <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
               + Tải logo
               <input
@@ -162,15 +169,12 @@ export default function BrandList() {
                 }}
               />
             </label>
-            {form.image_url && (
-              <img
-                src={form.image_url}
-                alt='Thương hiệu'
-                className='h-10 w-10 rounded object-cover'
-              />
-            )}
           </div>
-          <button type='submit' disabled={submitting} className='admin-btn-primary'>
+          <button
+            type='submit'
+            disabled={submitting}
+            className='admin-btn-primary self-start'
+          >
             Thêm
           </button>
         </form>
@@ -234,7 +238,14 @@ export default function BrandList() {
                   </td>
                   <td className='px-4 py-3'>
                     {editing_id === item.brand_id ? (
-                      <div className='space-y-2'>
+                      <div className='flex min-h-10 items-center gap-2'>
+                        {!!editing_form.image_url && (
+                          <img
+                            src={editing_form.image_url}
+                            alt='Thương hiệu'
+                            className='h-10 w-10 rounded object-cover'
+                          />
+                        )}
                         <label className='inline-flex cursor-pointer text-xs text-cyan-300 transition hover:text-cyan-200'>
                           + Tải logo
                           <input
@@ -248,13 +259,6 @@ export default function BrandList() {
                             }}
                           />
                         </label>
-                        {editing_form.image_url && (
-                          <img
-                            src={editing_form.image_url}
-                            alt='Thương hiệu'
-                            className='h-10 w-10 rounded object-cover'
-                          />
-                        )}
                       </div>
                     ) : item.image_url ? (
                       <img
