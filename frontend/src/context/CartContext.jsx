@@ -66,6 +66,10 @@ export function CartProvider({ children }) {
     return next_cart
   }
 
+  const clearCart = useCallback(() => {
+    setCartData(EMPTY_CART)
+  }, [])
+
   const total_items = useMemo(() => {
     return cart_data.items.reduce((sum_value, item_value) => {
       return sum_value + item_value.quantity
@@ -80,9 +84,10 @@ export function CartProvider({ children }) {
       loadCart,
       addToCart,
       updateCartItem,
-      removeCartItem
+      removeCartItem,
+      clearCart
     }),
-    [cart_data, cart_loading, total_items, loadCart]
+    [cart_data, cart_loading, total_items, loadCart, clearCart]
   )
 
   return (

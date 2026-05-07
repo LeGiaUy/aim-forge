@@ -74,8 +74,8 @@ export const orderApi = {
   createOrder(payload) {
     return api.post('/orders/create', payload)
   },
-  getOrders() {
-    return api.get('/orders')
+  getOrders(params = {}) {
+    return api.get('/orders', { params })
   },
   getOrderById(order_id) {
     return api.get(`/orders/${order_id}`)

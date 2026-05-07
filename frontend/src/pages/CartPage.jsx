@@ -85,7 +85,8 @@ export default function CartPage() {
     cart_data,
     cart_loading,
     updateCartItem,
-    removeCartItem
+    removeCartItem,
+    clearCart
   } = useCart()
   const [address_text, setAddressText] = useState('')
   const [payment_method, setPaymentMethod] = useState('VNPAY')
@@ -138,7 +139,10 @@ export default function CartPage() {
         await paymentApi.createCod({
           orderId: order_data.order_id
         })
-        navigate('/profile')
+        clearCart()
+        navigate(
+          `/payment-return?method=COD&status=success&order_id=${order_data.order_id}`
+        )
         return
       }
 

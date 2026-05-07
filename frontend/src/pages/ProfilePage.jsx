@@ -9,6 +9,12 @@ export default function ProfilePage() {
   const { refresh_user } = useAuth()
   const [profile_data, setProfileData] = useState(null)
   const [orders_data, setOrdersData] = useState([])
+  const [orders_pagination_data, setOrdersPaginationData] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    total_pages: 1
+  })
   const [is_loading, setIsLoading] = useState(true)
   const [is_loading_orders, setIsLoadingOrders] = useState(true)
   const [error_text, setErrorText] = useState('')
@@ -33,11 +39,9 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    const fetch_profile_and_orders = async () => {
+    const fetch_profile_data = async () => {
       setIsLoading(true)
-      setIsLoadingOrders(true)
       setErrorText('')
-      setOrdersErrorText('')
 
       try {
         const profile_response = await profileApi.getMe()
@@ -55,11 +59,32 @@ export default function ProfilePage() {
       } finally {
         setIsLoading(false)
       }
+    }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetch_profile_data()
+  }, [])
+
+  useEffect(() => {
+    const fetch_orders_data = async () => {
+      setIsLoadingOrders(true)
+      setOrdersErrorText('')
       try {
-        const orders_response = await orderApi.getOrders()
-        const next_orders = orders_response.data?.data || []
-        setOrdersData(Array.isArray(next_orders) ? next_orders : [])
+        const orders_response = await orderApi.getOrders({
+          page: orders_pagination_data.page,
+          limit: orders_pagination_data.limit
+        })
+        const next_orders_payload = orders_response.data?.data
+        const next_orders = next_orders_payload?.items || []
+
+        setOrdersData(next_orders)
+        setOrdersPaginationData(prev_state => ({
+          ...prev_state,
+          page: next_orders_payload?.page || prev_state.page,
+          limit: next_orders_payload?.limit || prev_state.limit,
+          total: next_orders_payload?.total || 0,
+          total_pages: next_orders_payload?.total_pages || 1
+        }))
       } catch (error) {
         setOrdersErrorText(error.message || 'Không thể tải đơn hàng')
       } finally {
@@ -67,9 +92,8 @@ export default function ProfilePage() {
       }
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetch_profile_and_orders()
-  }, [])
+    fetch_orders_data()
+  }, [orders_pagination_data.page, orders_pagination_data.limit])
 
   const get_status_class_name = status_value => {
     const status_class_map = {
@@ -352,7 +376,12 @@ export default function ProfilePage() {
       </section>
 
       <section className='mt-6 rounded-2xl border border-white/10 bg-[#0b1120] p-6'>
-        <h2 className='text-lg font-semibold'>Đơn hàng của tôi</h2>
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <h2 className='text-lg font-semibold'>Đơn hàng của tôi</h2>
+          <p className='text-xs text-[#94a3b8]'>
+            Tổng cộng {orders_pagination_data.total} đơn hàng
+          </p>
+        </div>
 
         {orders_error_text && (
           <p className='mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300'>
@@ -436,6 +465,47 @@ export default function ProfilePage() {
               </li>
             ))}
           </ul>
+        )}
+
+        {orders_pagination_data.total_pages > 1 && (
+          <div className='mt-4 flex items-center justify-center gap-2'>
+            <button
+              type='button'
+              onClick={() =>
+                setOrdersPaginationData(prev_state => ({
+                  ...prev_state,
+                  page: Math.max(1, prev_state.page - 1)
+                }))
+              }
+              disabled={orders_pagination_data.page <= 1 || is_loading_orders}
+              className='rounded-lg border border-white/20 px-3 py-1.5 text-xs text-[#cbd5e1] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40'
+            >
+              ← Trước
+            </button>
+            <span className='px-2 text-xs text-[#94a3b8]'>
+              Trang {orders_pagination_data.page}/
+              {orders_pagination_data.total_pages}
+            </span>
+            <button
+              type='button'
+              onClick={() =>
+                setOrdersPaginationData(prev_state => ({
+                  ...prev_state,
+                  page: Math.min(
+                    prev_state.total_pages,
+                    prev_state.page + 1
+                  )
+                }))
+              }
+              disabled={
+                orders_pagination_data.page >=
+                  orders_pagination_data.total_pages || is_loading_orders
+              }
+              className='rounded-lg border border-white/20 px-3 py-1.5 text-xs text-[#cbd5e1] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40'
+            >
+              Sau →
+            </button>
+          </div>
         )}
       </section>
     </main>

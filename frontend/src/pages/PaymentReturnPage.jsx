@@ -15,10 +15,19 @@ export default function PaymentReturnPage() {
 
       try {
         const params_object = Object.fromEntries(search_params.entries())
+        if (String(params_object.method || '').toUpperCase() === 'COD') {
+          setReturnData({
+            status: params_object.status || 'success',
+            order_id: params_object.order_id || null,
+            transaction_id: params_object.transaction_id || 'COD',
+            response_code: params_object.response_code || '00'
+          })
+          return
+        }
         const response = await paymentApi.getVnpayReturn(params_object)
         setReturnData(response.data?.data || null)
       } catch (error) {
-        setErrorMessage(error.message || 'Cannot verify payment return')
+        setErrorMessage(error.message || 'Không thể xác minh kết quả thanh toán')
       } finally {
         setLoadingData(false)
       }

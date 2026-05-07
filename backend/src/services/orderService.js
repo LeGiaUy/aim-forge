@@ -160,8 +160,15 @@ const map_order_item_public = (i) => {
   }
 }
 
-export const getOrders = async (userId) => {
-  const orders = await prisma.order.findMany({
+export const getOrders = async (userId, query_data = {}) => {
+  const page_number = Math.max(Number(query_data.page) || 1, 1)
+  const page_size = Math.min(Math.max(Number(query_data.limit) || 10, 1), 100)
+
+  const [total_records, orders] = await Promise.all([
+    prisma.order.count({
+      where: { user_id: userId }
+    }),
+    prisma.order.findMany({
     where: { user_id: userId },
     include: {
       items: {
@@ -184,18 +191,27 @@ export const getOrders = async (userId) => {
       payments: true,
     },
     orderBy: { created_at: "desc" },
-  });
+      skip: (page_number - 1) * page_size,
+      take: page_size
+    })
+  ])
 
-  return orders.map((o) => ({
-    order_id: o.order_id,
-    status: o.status,
-    total: Number(o.total),
-    address: o.address,
-    created_at: o.created_at,
-    payment_status: o.payments[0]?.status || "PENDING",
-    items: o.items.map(map_order_item_public),
-  }));
-};
+  return {
+    page: page_number,
+    limit: page_size,
+    total: total_records,
+    total_pages: Math.max(1, Math.ceil(total_records / page_size)),
+    items: orders.map((o) => ({
+      order_id: o.order_id,
+      status: o.status,
+      total: Number(o.total),
+      address: o.address,
+      created_at: o.created_at,
+      payment_status: o.payments[0]?.status || "PENDING",
+      items: o.items.map(map_order_item_public),
+    }))
+  }
+}
 
 export const getOrderById = async (userId, orderId) => {
   const order = await prisma.order.findFirst({

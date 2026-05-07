@@ -12,7 +12,7 @@ export const createOrder = async (req, res, next) => {
 
 export const getOrders = async (req, res, next) => {
   try {
-    const data = await orderService.getOrders(req.user.user_id);
+    const data = await orderService.getOrders(req.user.user_id, req.query);
     return sendSuccess(res, data, "Orders retrieved");
   } catch (err) {
     next(err);

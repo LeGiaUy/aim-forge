@@ -43,12 +43,6 @@ export default function VariantTable({
               Giá bán (₫) *
             </th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Giá niêm (₫)
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Giá vốn (₫)
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
               Tồn
             </th>
             <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
@@ -133,38 +127,6 @@ export default function VariantTable({
                     )
                   }
                   placeholder='0'
-                  className='admin-input w-28 min-w-[7rem]'
-                />
-              </td>
-              <td className='px-4 py-3 align-top'>
-                <input
-                  type='text'
-                  inputMode='numeric'
-                  value={format_price_display(v.compare_price ?? '')}
-                  onChange={e =>
-                    onRowChange(
-                      vi,
-                      'compare_price',
-                      normalize_price_input(e.target.value)
-                    )
-                  }
-                  placeholder='—'
-                  className='admin-input w-28 min-w-[7rem]'
-                />
-              </td>
-              <td className='px-4 py-3 align-top'>
-                <input
-                  type='text'
-                  inputMode='numeric'
-                  value={format_price_display(v.cost_price ?? '')}
-                  onChange={e =>
-                    onRowChange(
-                      vi,
-                      'cost_price',
-                      normalize_price_input(e.target.value)
-                    )
-                  }
-                  placeholder='—'
                   className='admin-input w-28 min-w-[7rem]'
                 />
               </td>

@@ -24,7 +24,7 @@ export default function FunnelStats({ funnel_data }) {
 
   return (
     <section className='rounded-xl border border-white/10 bg-[#101225] p-4 shadow-lg'>
-      <h2 className='text-base font-semibold text-white'>Phễu chuyển đổi</h2>
+      <h2 className='text-base font-semibold text-white'>Quy trình mua hàng</h2>
 
       <div className='mt-4 grid grid-cols-1 gap-3 md:grid-cols-3'>
         {STEP_CONFIG.map(step_item => (
@@ -46,12 +46,12 @@ export default function FunnelStats({ funnel_data }) {
         <p className='rounded-lg border border-white/10 bg-[#0b0d1d] p-3 text-sm text-slate-300'>
           Đã tạo → Đã thanh toán:{' '}
           {format_percent(funnel_data?.conversion?.createdToPaid)}
-          {' '}| Hủy: {format_percent(drop_created_to_paid)}
+          {' '}| Drop: {format_percent(drop_created_to_paid)}
         </p>
         <p className='rounded-lg border border-white/10 bg-[#0b0d1d] p-3 text-sm text-slate-300'>
           Đã thanh toán → Hoàn tất:{' '}
           {format_percent(funnel_data?.conversion?.paidToCompleted)}
-          {' '}| Hủy:{' '}
+          {' '}| Drop:{' '}
           {format_percent(drop_paid_to_completed)}
         </p>
       </div>
