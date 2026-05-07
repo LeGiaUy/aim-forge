@@ -85,7 +85,19 @@ const productUpdateSchema = z.object({
     .optional(),
 });
 
-const variantInclude = {
+const build_active_discount_where = () => ({
+  discount: {
+    is_active: true,
+    start_at: { lte: new Date() },
+    OR: [{ end_at: null }, { end_at: { gte: new Date() } }]
+  }
+})
+
+const build_variant_include = () => ({
+  discount_variants: {
+    where: build_active_discount_where(),
+    include: { discount: true }
+  },
   variant_option_values: {
     include: {
       option_value: {
@@ -95,8 +107,8 @@ const variantInclude = {
         },
       },
     },
-  },
-};
+  }
+})
 
 const productOptionsInclude = {
   orderBy: { sort_order: "asc" },
@@ -109,6 +121,24 @@ const productOptionsInclude = {
     },
   },
 };
+
+const build_active_discount_include = () => ({
+  where: build_active_discount_where(),
+  include: { discount: true }
+})
+
+const get_active_global_discounts = async () => {
+  return prisma.discount.findMany({
+    where: {
+      is_active: true,
+      start_at: { lte: new Date() },
+      OR: [{ end_at: null }, { end_at: { gte: new Date() } }],
+      products: { none: {} },
+      variants: { none: {} }
+    },
+    orderBy: { created_at: 'desc' }
+  })
+}
 
 /** Sắp xếp dòng option → value cho một variant (đã include quan hệ) */
 const formatVariantOptionRows = (variant) => {
@@ -355,7 +385,7 @@ const mapVariantToClient = (v, product, vp) => {
   };
 };
 
-const formatProductList = (product) => {
+const formatProductList = (product, global_discounts = []) => {
   const activeVariants = (product.variants || []).filter((v) => v.is_active);
 
   const representative =
@@ -371,7 +401,11 @@ const formatProductList = (product) => {
     gallery_list.find((img) => img.is_main) || gallery_list[0] || null;
 
   const pricing = representative
-    ? getVariantPricingPayload(representative)
+    ? getVariantPricingPayload({
+        ...representative,
+        product: { discount_products: product.discount_products || [] },
+        global_discounts: global_discounts
+      })
     : getSimplePricingPayload(product.price ?? 0);
 
   return {
@@ -441,7 +475,7 @@ export const getProducts = async (filters = {}) => {
   const order_by = build_order_by(sort);
   const skip = (Number(page) - 1) * Number(limit);
 
-  const [total, products] = await Promise.all([
+  const [total, products, global_discounts] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
@@ -450,18 +484,20 @@ export const getProducts = async (filters = {}) => {
       include: {
         brand: true,
         category: true,
+        discount_products: build_active_discount_include(),
         variants: {
           where: { is_active: true },
-          include: variantInclude,
+          include: build_variant_include(),
           orderBy: { variant_id: "asc" },
         },
       },
       orderBy: order_by,
     }),
+    get_active_global_discounts()
   ]);
 
   return {
-    items: products.map(formatProductList),
+    items: products.map(item => formatProductList(item, global_discounts)),
     pagination: {
       total,
       page: Number(page),
@@ -472,7 +508,8 @@ export const getProducts = async (filters = {}) => {
 };
 
 export const getProductById = async (id) => {
-  const product = await prisma.product.findUnique({
+  const [product, global_discounts] = await Promise.all([
+    prisma.product.findUnique({
     where: { product_id: Number(id) },
     include: {
       brand: true,
@@ -481,13 +518,16 @@ export const getProductById = async (id) => {
       specs: {
         include: { attribute: true },
       },
+      discount_products: build_active_discount_include(),
       variants: {
         where: { is_active: true },
-        include: variantInclude,
+        include: build_variant_include(),
         orderBy: { variant_id: "asc" },
       },
     },
-  });
+  }),
+    get_active_global_discounts()
+  ]);
 
   if (!product || !product.is_active) {
     const err = new Error("Product not found or inactive");
@@ -501,7 +541,11 @@ export const getProductById = async (id) => {
         Number(a.price) - Number(b.price) || a.variant_id - b.variant_id
     )[0] || null;
   const headlinePricing = headline_variant
-    ? getVariantPricingPayload(headline_variant)
+    ? getVariantPricingPayload({
+        ...headline_variant,
+        product: { discount_products: product.discount_products || [] },
+        global_discounts: global_discounts
+      })
     : getSimplePricingPayload(product.price ?? 0);
 
   return {
@@ -526,7 +570,11 @@ export const getProductById = async (id) => {
       value: s.value,
     })),
     variants: product.variants.map((v) => {
-      const vp = getVariantPricingPayload(v);
+      const vp = getVariantPricingPayload({
+        ...v,
+        product: { discount_products: product.discount_products || [] },
+        global_discounts: global_discounts
+      });
       return mapVariantToClient(v, product, vp);
     }),
   };

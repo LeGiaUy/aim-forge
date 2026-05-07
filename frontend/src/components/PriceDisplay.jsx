@@ -1,10 +1,11 @@
 import { formatVnd } from '../utils/currency.js'
 
 export default function PriceDisplay({ selected_variant, product_data }) {
-  const original = product_data?.price
+  const original = selected_variant?.price ?? product_data?.price
   const final =
     selected_variant?.final_price ?? product_data?.final_price ?? original
-  const discount_amount = product_data?.discount_amount
+  const discount_amount =
+    selected_variant?.discount_amount ?? product_data?.discount_amount
   const has_discount =
     discount_amount != null &&
     discount_amount > 0 &&

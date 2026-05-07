@@ -7,8 +7,28 @@ import {
   getMainGalleryImageUrl,
 } from "./variantDisplay.service.js";
 
-const variant_cart_include = {
-  product: { include: { brand: true } },
+const build_active_discount_where = () => ({
+  discount: {
+    is_active: true,
+    start_at: { lte: new Date() },
+    OR: [{ end_at: null }, { end_at: { gte: new Date() } }]
+  }
+})
+
+const build_variant_cart_include = () => ({
+  product: {
+    include: {
+      brand: true,
+      discount_products: {
+        where: build_active_discount_where(),
+        include: { discount: true }
+      }
+    }
+  },
+  discount_variants: {
+    where: build_active_discount_where(),
+    include: { discount: true }
+  },
   variant_option_values: {
     include: {
       option_value: {
@@ -18,8 +38,21 @@ const variant_cart_include = {
         },
       },
     },
-  },
-};
+  }
+})
+
+const get_active_global_discounts = async () => {
+  return prisma.discount.findMany({
+    where: {
+      is_active: true,
+      start_at: { lte: new Date() },
+      OR: [{ end_at: null }, { end_at: { gte: new Date() } }],
+      products: { none: {} },
+      variants: { none: {} }
+    },
+    orderBy: { created_at: 'desc' }
+  })
+}
 
 const addItemSchema = z.object({
   variant_id: z.number().int().positive(),
@@ -45,23 +78,29 @@ const getOrCreateCart = async (userId) => {
 };
 
 export const getCart = async (userId) => {
-  const cart = await prisma.cart.findUnique({
+  const [cart, global_discounts] = await Promise.all([
+    prisma.cart.findUnique({
     where: { user_id: userId },
     include: {
       items: {
         include: {
           variant: {
-            include: variant_cart_include,
+            include: build_variant_cart_include(),
           },
         },
       },
     },
-  });
+  }),
+    get_active_global_discounts()
+  ]);
 
   if (!cart) return { cart_id: null, items: [], total: 0 };
 
   const items = cart.items.map((item) => {
-    const vp = getVariantPricingPayload(item.variant);
+    const vp = getVariantPricingPayload({
+      ...item.variant,
+      global_discounts
+    });
     const attrs = buildVariantAttributesList(item.variant);
     return {
       variant_id: item.variant_id,

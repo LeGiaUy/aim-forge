@@ -21,6 +21,7 @@ import OrderList from './pages/admin/orders/OrderList.jsx'
 import ProductList from './pages/admin/products/ProductList.jsx'
 import ProductCreate from './pages/admin/products/ProductCreate.jsx'
 import ProductEdit from './pages/admin/products/ProductEdit.jsx'
+import DiscountList from './pages/admin/discounts/DiscountList.jsx'
 import DashboardPage from './pages/admin/dashboard/DashboardPage.jsx'
 import UserList from './pages/admin/users/UserList.jsx'
 import UserDetail from './pages/admin/users/UserDetail.jsx'
@@ -96,6 +97,7 @@ function App() {
             <Route index element={<Navigate to='dashboard' replace />} />
             <Route path='dashboard' element={<DashboardPage />} />
             <Route path='products' element={<ProductList />} />
+            <Route path='discounts' element={<DiscountList />} />
             <Route path='orders' element={<OrderList />} />
             <Route path='orders/:id' element={<OrderDetail />} />
             <Route path='products/create' element={<ProductCreate />} />

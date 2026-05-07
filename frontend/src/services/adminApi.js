@@ -124,6 +124,24 @@ export const adminStatsApi = {
   }
 }
 
+export const adminDiscountApi = {
+  getAll(params = {}) {
+    return api.get('/admin/discounts', { params })
+  },
+  preview(payload) {
+    return api.post('/admin/discounts/preview', payload)
+  },
+  create(payload) {
+    return api.post('/admin/discounts', payload)
+  },
+  update(id, payload) {
+    return api.put(`/admin/discounts/${id}`, payload)
+  },
+  delete(id) {
+    return api.delete(`/admin/discounts/${id}`)
+  }
+}
+
 export const adminUserApi = {
   getUsers(params = {}) {
     return api.get('/admin/users', { params })

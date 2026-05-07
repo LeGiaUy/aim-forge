@@ -8,7 +8,19 @@ import {
   getMainGalleryImageUrl,
 } from "./variantDisplay.service.js";
 
-const variant_include_base = {
+const build_active_discount_where = () => ({
+  discount: {
+    is_active: true,
+    start_at: { lte: new Date() },
+    OR: [{ end_at: null }, { end_at: { gte: new Date() } }]
+  }
+})
+
+const build_variant_include_base = () => ({
+  discount_variants: {
+    where: build_active_discount_where(),
+    include: { discount: true }
+  },
   variant_option_values: {
     include: {
       option_value: {
@@ -18,7 +30,20 @@ const variant_include_base = {
         },
       },
     },
-  },
+  }
+})
+
+const get_active_global_discounts = async () => {
+  return prisma.discount.findMany({
+    where: {
+      is_active: true,
+      start_at: { lte: new Date() },
+      OR: [{ end_at: null }, { end_at: { gte: new Date() } }],
+      products: { none: {} },
+      variants: { none: {} }
+    },
+    orderBy: { created_at: 'desc' }
+  })
 }
 
 const createOrderSchema = z.object({
@@ -35,16 +60,34 @@ export const createOrder = async (userId, body) => {
 
   const { address } = parsed.data;
 
-  const cart = await prisma.cart.findUnique({
+  const [cart, global_discounts] = await Promise.all([
+    prisma.cart.findUnique({
     where: { user_id: userId },
     include: {
       items: {
         include: {
-          variant: { include: { product: true } },
+          variant: {
+            include: {
+              product: {
+                include: {
+                  discount_products: {
+                    where: build_active_discount_where(),
+                    include: { discount: true }
+                  }
+                }
+              },
+              discount_variants: {
+                where: build_active_discount_where(),
+                include: { discount: true }
+              }
+            }
+          },
         },
       },
     },
-  });
+  }),
+    get_active_global_discounts()
+  ]);
 
   if (!cart || cart.items.length === 0) {
     const err = new Error("Cart is empty");
@@ -53,7 +96,10 @@ export const createOrder = async (userId, body) => {
   }
 
   const total = cart.items.reduce((sum, item) => {
-    const unit_final = getVariantSellPrice(item.variant);
+    const unit_final = getVariantSellPrice({
+      ...item.variant,
+      global_discounts
+    });
     return sum + unit_final * item.quantity;
   }, 0);
 
@@ -66,7 +112,10 @@ export const createOrder = async (userId, body) => {
         address,
         items: {
           create: cart.items.map((item) => {
-            const unit_final = getVariantSellPrice(item.variant);
+            const unit_final = getVariantSellPrice({
+              ...item.variant,
+              global_discounts
+            });
             return {
               variant_id: item.variant_id,
               price: unit_final,
@@ -118,7 +167,17 @@ export const getOrders = async (userId) => {
       items: {
         include: {
           variant: {
-            include: { product: true, ...variant_include_base },
+            include: {
+              product: {
+                include: {
+                  discount_products: {
+                    where: build_active_discount_where(),
+                    include: { discount: true }
+                  }
+                }
+              },
+              ...build_variant_include_base()
+            },
           },
         },
       },
@@ -146,8 +205,16 @@ export const getOrderById = async (userId, orderId) => {
         include: {
           variant: {
             include: {
-              product: { include: { brand: true } },
-              ...variant_include_base,
+              product: {
+                include: {
+                  brand: true,
+                  discount_products: {
+                    where: build_active_discount_where(),
+                    include: { discount: true }
+                  }
+                }
+              },
+              ...build_variant_include_base(),
             },
           },
         },

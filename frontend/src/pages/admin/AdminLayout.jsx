@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { label: 'Danh mục', path: '/admin/categories' },
   { label: 'Thuộc tính', path: '/admin/attributes' },
   { label: 'Sản phẩm', path: '/admin/products' },
+  { label: 'Khuyến mãi', path: '/admin/discounts' },
   { label: 'Đơn hàng', path: '/admin/orders' },
   { label: 'Người dùng', path: '/admin/users' }
 ]
