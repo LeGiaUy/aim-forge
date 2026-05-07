@@ -12,13 +12,6 @@ const CartPlusIcon = () => (
   </svg>
 )
 
-const EyeIcon = () => (
-  <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
-    <path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z' />
-    <circle cx='12' cy='12' r='3' />
-  </svg>
-)
-
 function ImageFallback({ name }) {
   return (
     <div className='w-full h-full flex items-center justify-center bg-[#14141f]'>
@@ -109,14 +102,36 @@ export default function ProductCard({ product, index = 0 }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-60" />
 
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span
-              className='flex items-center gap-2 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-wider text-white'
-              style={{ background: 'rgba(10,10,15,0.85)', border: '1px solid rgba(124,58,237,0.4)' }}
-            >
-              <EyeIcon /> Xem nhanh
-            </span>
-          </div>
+          <button
+            id={`add-to-cart-image-${product_id}`}
+            onClick={handleAddToCart}
+            aria-label={`Thêm ${name} vào giỏ`}
+            className={`absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-display font-semibold
+                        uppercase tracking-wider transition-all duration-200
+                        ${!is_authenticated || out_of_stock
+                          ? 'cursor-not-allowed border border-white/20 bg-white/10 text-[#64748b]'
+                          : added
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            : 'bg-[#7c3aed]/85 text-[#f8fafc] border border-[#7c3aed]/40 hover:bg-[#7c3aed] hover:border-[#7c3aed]/70'
+                        }`}
+            disabled={!is_authenticated || out_of_stock}
+          >
+            {added ? (
+              <>
+                <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' aria-hidden='true'>
+                  <polyline points='20 6 9 17 4 12' />
+                </svg>
+                Đã thêm
+              </>
+            ) : (
+              <>
+                <CartPlusIcon />
+                {is_authenticated
+                  ? (out_of_stock ? 'Hết hàng' : 'Thêm')
+                  : 'Đăng nhập'}
+              </>
+            )}
+          </button>
 
           {brand && (
             <div
@@ -160,59 +175,32 @@ export default function ProductCard({ product, index = 0 }) {
           <p className="mt-1 text-[#64748b] text-xs font-body">{brand.name}</p>
         )}
 
-        <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="mt-3 flex items-end gap-2">
           <div className="min-w-0 flex-1">
             {has_active_discount ? (
-              <div className="flex flex-col gap-0.5">
-                <span className="font-display text-sm text-[#64748b] line-through">
-                  {formatVnd(original_price)}
-                </span>
-                <span className="font-display text-xl font-bold text-[#06b6d4]">
-                  {formatVnd(final_price)}
-                </span>
+              <div className="flex min-h-[50px] flex-col justify-end gap-0.5">
+                <div className="flex items-end gap-2">
+                  <span className="font-display text-xl font-bold text-[#06b6d4]">
+                    {formatVnd(final_price)}
+                  </span>
+                  <span className="pb-0.5 font-display text-sm text-[#64748b] line-through">
+                    {formatVnd(original_price)}
+                  </span>
+                </div>
                 <span className="text-[11px] font-semibold text-emerald-400">
                   Tiết kiệm {formatVnd(Math.round(discount_amount))}
                 </span>
               </div>
             ) : (
-              <span className="font-display text-xl font-bold text-[#7c3aed]">
-                {final_price !== null && final_price !== undefined
-                  ? formatVnd(final_price)
-                  : '—'}
-              </span>
+              <div className="flex min-h-[32px] flex-col justify-end">
+                <span className="font-display text-xl font-bold text-[#7c3aed]">
+                  {final_price !== null && final_price !== undefined
+                    ? formatVnd(final_price)
+                    : '—'}
+                </span>
+              </div>
             )}
           </div>
-
-          <button
-            id={`add-to-cart-${product_id}`}
-            onClick={handleAddToCart}
-            aria-label={`Thêm ${name} vào giỏ`}
-            className={`flex shrink-0 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-display font-semibold
-                        uppercase tracking-wider transition-all duration-200 cursor-pointer
-                        ${!is_authenticated || out_of_stock
-                          ? 'cursor-not-allowed border border-white/20 bg-white/10 text-[#64748b]'
-                          : added
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                            : 'bg-[#7c3aed]/10 text-[#9f67ff] border border-[#7c3aed]/30 hover:bg-[#7c3aed]/20 hover:border-[#7c3aed]/60'
-                        }`}
-            disabled={!is_authenticated || out_of_stock}
-          >
-            {added ? (
-              <>
-                <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' aria-hidden='true'>
-                  <polyline points='20 6 9 17 4 12' />
-                </svg>
-                Đã thêm
-              </>
-            ) : (
-              <>
-                <CartPlusIcon />
-                {is_authenticated
-                  ? (out_of_stock ? 'Hết' : 'Thêm')
-                  : 'Đăng nhập'}
-              </>
-            )}
-          </button>
         </div>
       </div>
 

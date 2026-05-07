@@ -41,23 +41,25 @@ export default function RelatedProducts({ products }) {
               <h3 className='line-clamp-2 font-display text-sm font-semibold uppercase text-white'>
                 {item.name}
               </h3>
-              {show_disc ? (
-                <div className='space-y-1'>
-                  <p className='font-display text-xs text-[#64748b] line-through'>
-                    {formatVnd(orig)}
-                  </p>
-                  <p className='font-display text-lg font-bold text-[#06b6d4]'>
+              <div className='flex min-h-[62px] flex-col justify-end'>
+                {show_disc ? (
+                  <div className='space-y-1'>
+                    <p className='font-display text-xs text-[#64748b] line-through'>
+                      {formatVnd(orig)}
+                    </p>
+                    <p className='font-display text-lg font-bold text-[#06b6d4]'>
+                      {formatVnd(fin)}
+                    </p>
+                    <p className='text-[10px] font-semibold text-emerald-400'>
+                      Tiết kiệm {formatVnd(Math.round(save))}
+                    </p>
+                  </div>
+                ) : (
+                  <p className='font-display text-lg font-bold text-[#9f67ff]'>
                     {formatVnd(fin)}
                   </p>
-                  <p className='text-[10px] font-semibold text-emerald-400'>
-                    Tiết kiệm {formatVnd(Math.round(save))}
-                  </p>
-                </div>
-              ) : (
-                <p className='font-display text-lg font-bold text-[#9f67ff]'>
-                  {formatVnd(fin)}
-                </p>
-              )}
+                )}
+              </div>
             </div>
           </Link>
           )
