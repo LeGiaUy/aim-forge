@@ -10,7 +10,12 @@ import { useProductDetail } from '../hooks/useProductDetail.js'
 function LoadingState() {
   return (
     <section className='space-y-6'>
-      <div className='skeleton aspect-square w-full max-w-full rounded-2xl' />
+      <div
+        className={
+          'skeleton mx-auto aspect-square w-full max-w-xs ' +
+          'rounded-2xl sm:max-w-sm md:max-w-md lg:max-w-lg'
+        }
+      />
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         <div className='skeleton h-52 w-full rounded-2xl' />
         <div className='skeleton h-52 w-full rounded-2xl' />

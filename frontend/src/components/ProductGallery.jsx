@@ -66,7 +66,12 @@ export default function ProductGallery({
   }
 
   return (
-    <section className='space-y-4'>
+    <section
+      className={
+        'mx-auto w-full max-w-xs space-y-4 ' +
+        'sm:max-w-sm md:max-w-md lg:max-w-lg'
+      }
+    >
       <div
         className='group relative overflow-hidden rounded-2xl border border-white/10 bg-[#111122] p-3'
         onTouchStart={event => setTouchStartX(event.targetTouches[0].clientX)}
@@ -109,7 +114,7 @@ export default function ProductGallery({
         </button>
       </div>
 
-      <div className='flex gap-3 overflow-x-auto pb-2'>
+      <div className='flex max-w-full gap-3 overflow-x-auto pb-2'>
         {image_list.map(item => {
           const is_selected = item.image_url === selected_image
 
