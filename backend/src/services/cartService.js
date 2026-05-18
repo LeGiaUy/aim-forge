@@ -68,6 +68,24 @@ const removeItemSchema = z.object({
   variant_id: z.number().int().positive(),
 });
 
+const assertQuantityWithinStock = (variant, next_quantity) => {
+  const stock_value = Number(variant.stock ?? 0);
+
+  if (stock_value <= 0) {
+    const err = new Error("Sản phẩm đã hết hàng");
+    err.status = 400;
+    throw err;
+  }
+
+  if (next_quantity > stock_value) {
+    const err = new Error(
+      `Số lượng vượt quá tồn kho. Chỉ còn ${stock_value} sản phẩm`
+    );
+    err.status = 400;
+    throw err;
+  }
+};
+
 // Get or create cart for user
 const getOrCreateCart = async (userId) => {
   return prisma.cart.upsert({
@@ -118,6 +136,7 @@ export const getCart = async (userId) => {
       variant_name: buildVariantDisplayName(item.variant),
       attributes: attrs,
       image: getMainGalleryImageUrl(item.variant),
+      stock: item.variant.stock,
     };
   });
 
@@ -151,10 +170,15 @@ export const addItem = async (userId, body) => {
     where: { cart_id_variant_id: { cart_id: cart.cart_id, variant_id } },
   });
 
+  const next_quantity = existing
+    ? existing.quantity + quantity
+    : quantity;
+  assertQuantityWithinStock(variant, next_quantity);
+
   if (existing) {
     await prisma.cartItem.update({
       where: { cart_id_variant_id: { cart_id: cart.cart_id, variant_id } },
-      data: { quantity: existing.quantity + quantity },
+      data: { quantity: next_quantity },
     });
   } else {
     await prisma.cartItem.create({
@@ -184,6 +208,17 @@ export const updateItem = async (userId, body) => {
     err.status = 404;
     throw err;
   }
+
+  const variant = await prisma.productVariant.findUnique({
+    where: { variant_id },
+  });
+  if (!variant) {
+    const err = new Error("Variant not found");
+    err.status = 404;
+    throw err;
+  }
+
+  assertQuantityWithinStock(variant, quantity);
 
   await prisma.cartItem.update({
     where: { cart_id_variant_id: { cart_id: cart.cart_id, variant_id } },

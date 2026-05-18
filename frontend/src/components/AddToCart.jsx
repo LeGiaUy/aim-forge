@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '../context/CartContext.jsx'
 
 const PlusIcon = () => (
@@ -52,7 +52,7 @@ const getStockState = stock_value => {
 }
 
 export default function AddToCart({ selected_variant }) {
-  const { addToCart } = useCart()
+  const { addToCart, cart_data } = useCart()
   const [quantity_value, setQuantityValue] = useState(1)
   const [toast_state, setToastState] = useState({
     message: '',
@@ -60,11 +60,39 @@ export default function AddToCart({ selected_variant }) {
   })
   const [loading_state, setLoadingState] = useState(false)
 
+  const stock_value = selected_variant?.stock || 0
+
+  const cart_quantity = useMemo(() => {
+    const cart_item = cart_data.items.find(
+      item_value =>
+        item_value.variant_id === selected_variant?.variant_id
+    )
+    return cart_item?.quantity || 0
+  }, [cart_data.items, selected_variant?.variant_id])
+
+  const available_quantity = useMemo(() => {
+    return Math.max(stock_value - cart_quantity, 0)
+  }, [stock_value, cart_quantity])
+
   const stock_state = useMemo(() => {
     return getStockState(selected_variant?.stock || 0)
   }, [selected_variant])
 
-  const disable_add_button = !selected_variant || selected_variant.stock <= 0
+  const disable_add_button =
+    !selected_variant ||
+    stock_value <= 0 ||
+    available_quantity <= 0
+
+  useEffect(() => {
+    setQuantityValue(1)
+  }, [selected_variant?.variant_id])
+
+  useEffect(() => {
+    if (available_quantity <= 0) return
+    setQuantityValue(prev_value =>
+      Math.min(Math.max(prev_value, 1), available_quantity)
+    )
+  }, [available_quantity])
 
   const showToast = (message_value, type_value) => {
     setToastState({ message: message_value, type: type_value })
@@ -74,22 +102,41 @@ export default function AddToCart({ selected_variant }) {
   }
 
   const updateQuantity = next_value => {
-    if (!selected_variant) return
+    if (!selected_variant || available_quantity <= 0) return
     const clamped_value = Math.min(
       Math.max(next_value, 1),
-      selected_variant.stock || 1
+      available_quantity
     )
     setQuantityValue(clamped_value)
+  }
+
+  const handleQuantityInput = event => {
+    const raw_value = event.target.value
+    if (raw_value === '') return
+    const parsed_value = Number.parseInt(raw_value, 10)
+    if (Number.isNaN(parsed_value)) return
+    setQuantityValue(parsed_value)
+  }
+
+  const commitQuantityInput = () => {
+    updateQuantity(quantity_value)
   }
 
   const handleAddToCart = async () => {
     if (disable_add_button || loading_state) return
 
+    const final_quantity = Math.min(
+      Math.max(quantity_value, 1),
+      available_quantity
+    )
+
+    setQuantityValue(final_quantity)
+
     setLoadingState(true)
     try {
       await addToCart({
         variant_id: selected_variant.variant_id,
-        quantity: quantity_value
+        quantity: final_quantity
       })
       showToast('Đã thêm vào giỏ hàng', 'success')
     } catch (error) {
@@ -121,19 +168,45 @@ export default function AddToCart({ selected_variant }) {
           >
             <MinusIcon />
           </button>
-          <span className='w-10 text-center font-display text-sm font-semibold text-white'>
-            {quantity_value}
-          </span>
+          <input
+            type='number'
+            min={1}
+            max={available_quantity || 1}
+            inputMode='numeric'
+            aria-label='Số lượng muốn mua'
+            value={quantity_value}
+            disabled={disable_add_button}
+            onChange={handleQuantityInput}
+            onBlur={commitQuantityInput}
+            className='h-10 w-14 border-x border-white/15 bg-transparent text-center font-display text-sm font-semibold text-white outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none disabled:cursor-not-allowed disabled:text-[#64748b]'
+          />
           <button
             type='button'
             aria-label='Tăng số lượng'
             onClick={() => updateQuantity(quantity_value + 1)}
-            className='flex h-10 w-10 items-center justify-center text-[#cbd5e1] transition hover:text-white'
+            disabled={
+              disable_add_button ||
+              quantity_value >= available_quantity
+            }
+            className='flex h-10 w-10 items-center justify-center text-[#cbd5e1] transition hover:text-white disabled:cursor-not-allowed disabled:text-[#64748b]'
           >
             <PlusIcon />
           </button>
         </div>
       </div>
+
+      {cart_quantity > 0 && available_quantity > 0 && (
+        <p className='text-xs text-[#94a3b8]'>
+          Đã có {cart_quantity} trong giỏ — còn thêm được tối đa{' '}
+          {available_quantity}
+        </p>
+      )}
+
+      {cart_quantity > 0 && available_quantity <= 0 && stock_value > 0 && (
+        <p className='text-xs font-semibold text-amber-300'>
+          Đã đạt số lượng tối đa trong giỏ hàng
+        </p>
+      )}
 
       <button
         type='button'
