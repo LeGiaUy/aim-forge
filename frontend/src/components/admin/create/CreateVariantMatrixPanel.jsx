@@ -9,7 +9,10 @@ import {
   format_price_display,
   normalize_price_input
 } from '../../../utils/priceInput.js'
-import { combo_key_from_labels, auto_variant_sku } from '../../../utils/variantMatrixHelpers.js'
+import {
+  build_default_variant_sku,
+  combo_key_from_labels,
+} from '../../../utils/variantMatrixHelpers.js'
 
 /** Một ô input — tránh rerender không cần khi chỉ các hàng khác đổi */
 const MemoInput = memo(function MemoInput({
@@ -56,8 +59,7 @@ export default function CreateVariantMatrixPanel({
   product_options,
   variants,
   patch_variant_fields,
-  sku_prefix,
-  on_sku_prefix_change,
+  sku_namespace = '',
 }) {
   const [filter_axis, set_filter_axis] = useState('-1')
   const [filter_value, set_filter_value] = useState('')
@@ -206,7 +208,6 @@ export default function CreateVariantMatrixPanel({
 
   const handle_regenerate_sku = useCallback(
     mode => {
-      const pref = String(sku_prefix ?? '').trim()
       const indices_from_selected =
         mode === 'selected' ?
           visible_rows
@@ -225,17 +226,21 @@ export default function CreateVariantMatrixPanel({
           )
           return {
             ...variant_item,
-            sku: auto_variant_sku(labels_here, pref),
+            sku: build_default_variant_sku({
+              combo: labels_here,
+              combo_index: idx,
+              sku_namespace,
+            }),
           }
         })
       )
     },
     [
-      sku_prefix,
       patch_variant_fields,
       product_options,
       visible_rows,
       selected_row_indices,
+      sku_namespace,
     ]
   )
 
@@ -379,20 +384,6 @@ export default function CreateVariantMatrixPanel({
   return (
     <div className='space-y-4'>
       <div className='flex flex-wrap items-end gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4'>
-        <div>
-          <label className='admin-label mb-1 block'>
-            Tiền tố SKU khi sinh tự động
-          </label>
-          <input
-            type='text'
-            value={sku_prefix ?? ''}
-            onChange={e =>
-              on_sku_prefix_change && on_sku_prefix_change(e.target.value)
-            }
-            placeholder='vd. PDP'
-            className='admin-input w-32'
-          />
-        </div>
         <div>
           <label className='admin-label mb-1 block'>Giá bán</label>
           <input
@@ -576,7 +567,6 @@ export default function CreateVariantMatrixPanel({
         <span>
           {variants.length} biến thể tổng · {visible_rows.length} hiển thị
         </span>
-        <span>Các ô giá và tối ưu bằng React.memo trong bảng</span>
       </div>
     </div>
   )

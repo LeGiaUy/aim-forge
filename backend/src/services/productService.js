@@ -451,6 +451,52 @@ const buildArchivedSku = (sku, variant_id, archived_at) => {
   return `${sku}-del-${variant_id}-${archived_at}`;
 };
 
+/** Đảm bảo SKU không trùng trong batch và trên toàn DB (@unique) */
+const resolveUniqueVariantSku = async (
+  tx,
+  raw_sku,
+  {
+    product_id,
+    variant_index,
+    used_skus_in_batch,
+    exclude_variant_id,
+  }
+) => {
+  const base =
+    raw_sku != null && String(raw_sku).trim() ?
+      String(raw_sku).trim()
+    : `P${product_id}-V${variant_index + 1}`;
+
+  let candidate = base;
+  let suffix = 0;
+
+  while (true) {
+    if (used_skus_in_batch.has(candidate)) {
+      suffix += 1;
+      candidate = `${base}-${suffix}`;
+      continue;
+    }
+
+    const existing = await tx.productVariant.findFirst({
+      where: {
+        sku: candidate,
+        ...(exclude_variant_id ?
+          { NOT: { variant_id: exclude_variant_id } }
+        : {}),
+      },
+      select: { variant_id: true },
+    });
+
+    if (!existing) {
+      used_skus_in_batch.add(candidate);
+      return candidate;
+    }
+
+    suffix += 1;
+    candidate = `${base}-${suffix}`;
+  }
+};
+
 const validateProductAttributes = async (categoryId, specs) => {
   const categoryAttributes = await prisma.attribute.findMany({
     where: { category_id: categoryId },
@@ -669,7 +715,10 @@ export const createProduct = async (body) => {
         throw err;
       }
 
-      for (const v of variants) {
+      const used_skus_in_batch = new Set();
+
+      for (let vi = 0; vi < variants.length; vi += 1) {
+        const v = variants[vi];
         if (v.option_selections.length !== option_count) {
           const err = new Error("option_selections length must match product_options");
           err.status = 400;
@@ -687,10 +736,20 @@ export const createProduct = async (body) => {
             String(v.sku).trim()
           : null;
 
+        const sku_final = await resolveUniqueVariantSku(
+          tx,
+          sku_trimmed,
+          {
+            product_id: product.product_id,
+            variant_index: vi,
+            used_skus_in_batch,
+          }
+        );
+
         await tx.productVariant.create({
           data: {
             product_id: product.product_id,
-            sku: sku_trimmed,
+            sku: sku_final,
             stock: v.stock,
             price: v.price,
             compare_price: normalizeVariantComparePrice(v.price, v.compare_price),
@@ -861,6 +920,8 @@ export const updateProduct = async (id, body) => {
           });
         }
 
+        const used_skus_in_batch_update = new Set();
+
         for (const v of variants) {
           if (
             option_count > 0 &&
@@ -877,8 +938,18 @@ export const updateProduct = async (id, body) => {
             const cur = existingVars.find(
               (ev) => ev.variant_id === v.variant_id
             );
+            const sku_final = await resolveUniqueVariantSku(
+              tx,
+              v.sku,
+              {
+                product_id,
+                variant_index: variants.indexOf(v),
+                used_skus_in_batch: used_skus_in_batch_update,
+                exclude_variant_id: v.variant_id,
+              }
+            );
             const variant_patch = {
-              sku: v.sku,
+              sku: sku_final,
               stock: v.stock,
               is_active: true,
             };
@@ -930,10 +1001,20 @@ export const updateProduct = async (id, body) => {
               throw err;
             }
 
+            const sku_final = await resolveUniqueVariantSku(
+              tx,
+              v.sku,
+              {
+                product_id,
+                variant_index: variants.indexOf(v),
+                used_skus_in_batch: used_skus_in_batch_update,
+              }
+            );
+
             const created = await tx.productVariant.create({
               data: {
                 product_id,
-                sku: v.sku ?? null,
+                sku: sku_final,
                 stock: v.stock,
                 price: v.price,
                 compare_price: normalizeVariantComparePrice(

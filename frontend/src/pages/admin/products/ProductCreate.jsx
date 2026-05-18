@@ -61,9 +61,9 @@ export default function ProductCreate() {
   } = useProductForm()
 
   const [axes, set_axes] = useState(() => [...default_axes_snapshot])
-  const [matrix_sku_prefix, set_matrix_sku_prefix] = useState('')
-  const matrix_sku_prefix_ref = useRef(matrix_sku_prefix)
-  matrix_sku_prefix_ref.current = matrix_sku_prefix
+  const sku_namespace_ref = useRef(
+    `AF${Date.now().toString(36).slice(-8).toUpperCase()}`
+  )
 
   const last_cat_for_axes_reset = useRef('')
 
@@ -97,7 +97,7 @@ export default function ProductCreate() {
         prev_product_options: snapshot_old_po,
         prev_variants: prev_v,
         default_price: form.price,
-        sku_prefix: matrix_sku_prefix_ref.current.trim(),
+        sku_namespace: sku_namespace_ref.current,
       })
     )
     replace_create_product_options(axes_to_product_options(axes))
@@ -228,7 +228,7 @@ export default function ProductCreate() {
         prev_product_options: snapshot_prev_po,
         prev_variants: variants,
         default_price: form.price,
-        sku_prefix: matrix_sku_prefix.trim(),
+        sku_namespace: sku_namespace_ref.current,
       })
       flushSync(() => {
         replace_create_product_options(synced_po)
@@ -387,8 +387,7 @@ export default function ProductCreate() {
               product_options={product_options}
               variants={variants}
               patch_variant_fields={patch_variant_fields}
-              sku_prefix={matrix_sku_prefix}
-              on_sku_prefix_change={set_matrix_sku_prefix}
+              sku_namespace={sku_namespace_ref.current}
             />
           </div>
         </section>

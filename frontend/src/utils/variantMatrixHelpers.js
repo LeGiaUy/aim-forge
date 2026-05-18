@@ -22,6 +22,18 @@ export function auto_variant_sku(combo, prefix = '') {
   return prefix ? `${prefix}-${base}` : base
 }
 
+/** SKU mặc định: namespace phiên + slug combo + chỉ số (tránh trùng @unique) */
+export function build_default_variant_sku({
+  combo,
+  combo_index = 0,
+  sku_namespace = '',
+}) {
+  const ns = String(sku_namespace || '').trim()
+  const slug = auto_variant_sku(combo)
+  const seq = String(combo_index + 1)
+  return [ns, slug, seq].filter(Boolean).join('-')
+}
+
 /**
  * axes: { name, values: string[] }[]
  * Returns product_options shape for useProductForm
@@ -58,7 +70,7 @@ export function regenerate_variants_matrix({
   prev_product_options,
   prev_variants,
   default_price = '',
-  sku_prefix = ''
+  sku_namespace = '',
 }) {
   const value_matrix = axes.map(a =>
     a.values.map(v => String(v).trim()).filter(Boolean)
@@ -92,7 +104,11 @@ export function regenerate_variants_matrix({
         : 0
     const base_sku =
       prev?.sku?.trim() ||
-      `${auto_variant_sku(combo, sku_prefix)}-${combo_i + 1}`
+      build_default_variant_sku({
+        combo,
+        combo_index: combo_i,
+        sku_namespace,
+      })
     return {
       variant_id: undefined,
       option_selections,
