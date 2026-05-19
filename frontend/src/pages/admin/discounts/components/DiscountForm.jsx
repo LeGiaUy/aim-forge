@@ -40,10 +40,10 @@ export default function DiscountForm({
       list.push('Thời gian kết thúc nhỏ hơn thời gian bắt đầu')
     }
     if (scope_mode === 'products' && form.product_ids.length === 0) {
-      list.push('Scope products đang rỗng')
+      list.push('Phạm vi sản phẩm đang rỗng')
     }
     if (scope_mode === 'variants' && form.variant_ids.length === 0) {
-      list.push('Scope variants đang rỗng')
+      list.push('Phạm vi biến thể đang rỗng')
     }
     if (Number(form.min_final_price || 0) <= 0) {
       list.push('Giá tối thiểu nên lớn hơn 0 để tránh final price bằng 0')
@@ -64,7 +64,7 @@ export default function DiscountForm({
       </h2>
       <form onSubmit={on_submit} className='space-y-5'>
         <div className='rounded-xl border border-white/10 p-4'>
-          <h3 className='mb-3 text-sm font-semibold text-white'>Basic Info</h3>
+          <h3 className='mb-3 text-sm font-semibold text-white'>Thông tin cơ bản</h3>
           <div className='grid grid-cols-1 gap-3 md:grid-cols-4'>
             <input
               value={form.name}
@@ -72,8 +72,8 @@ export default function DiscountForm({
                 set_form(prev => ({ ...prev, name: event.target.value }))
               }
               className='admin-input'
-              placeholder='Tên campaign'
-              aria-label='Tên campaign'
+              placeholder='Tên chiến dịch'
+              aria-label='Tên chiến dịch'
             />
             <select
               value={form.type}
@@ -105,16 +105,16 @@ export default function DiscountForm({
                   set_form(prev => ({ ...prev, is_active: event.target.checked }))
                 }
               />
-              Active
+              Active (Đang chạy)
             </label>
           </div>
         </div>
 
         <div className='rounded-xl border border-white/10 p-4'>
-          <h3 className='mb-3 text-sm font-semibold text-white'>Schedule</h3>
+          <h3 className='mb-3 text-sm font-semibold text-white'>Lịch trình</h3>
           <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
             <div>
-              <label className='admin-label'>Start</label>
+              <label className='admin-label'>Bắt đầu</label>
               <input
                 type='datetime-local'
                 value={form.start_at}
@@ -125,7 +125,7 @@ export default function DiscountForm({
               />
             </div>
             <div>
-              <label className='admin-label'>End</label>
+              <label className='admin-label'>Kết thúc</label>
               <input
                 type='datetime-local'
                 value={form.end_at}
@@ -136,7 +136,7 @@ export default function DiscountForm({
               />
             </div>
             <div>
-              <label className='admin-label'>Status</label>
+              <label className='admin-label'>Trạng thái</label>
               <div className='rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-cyan-300'>
                 {schedule_status}
               </div>
@@ -145,7 +145,7 @@ export default function DiscountForm({
         </div>
 
         <div className='rounded-xl border border-white/10 p-4'>
-          <h3 className='mb-3 text-sm font-semibold text-white'>Scope</h3>
+          <h3 className='mb-3 text-sm font-semibold text-white'>Phạm vi</h3>
           <div className='mb-3 flex items-center gap-2'>
             <button
               type='button'
@@ -156,7 +156,7 @@ export default function DiscountForm({
                   : 'bg-white/5 text-[#cbd5e1]'
               }`}
             >
-              Entire products
+              Tất cả sản phẩm
             </button>
             <button
               type='button'
@@ -167,7 +167,7 @@ export default function DiscountForm({
                   : 'bg-white/5 text-[#cbd5e1]'
               }`}
             >
-              Specific variants
+              Biến thể
             </button>
           </div>
 

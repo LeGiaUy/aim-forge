@@ -88,7 +88,7 @@ export default function RegisterForm() {
       )}
 
       <Input
-        label_text='Username'
+        label_text='Tên người dùng'
         name='username'
         value={form_state.username}
         onChange={handleChange}
@@ -106,7 +106,7 @@ export default function RegisterForm() {
       />
 
       <Input
-        label_text='Password'
+        label_text='Mật khẩu'
         name='password'
         type='password'
         value={form_state.password}
@@ -116,7 +116,7 @@ export default function RegisterForm() {
       />
 
       <Input
-        label_text='Confirm password'
+        label_text='Xác nhận mật khẩu'
         name='confirm_password'
         type='password'
         value={form_state.confirm_password}
@@ -126,16 +126,16 @@ export default function RegisterForm() {
       />
 
       <Button type='submit' loading={is_loading} disabled={has_form_error}>
-        Register
+        Tạo tài khoản
       </Button>
 
       <p className='text-center text-xs text-[#94a3b8]'>
-        Already have an account?{' '}
+        Đã có tài khoản?{' '}
         <Link
           to='/login'
           className='font-semibold text-[#9f67ff] transition hover:text-cyan-300'
         >
-          Sign in
+          Đăng nhập
         </Link>
       </p>
     </form>

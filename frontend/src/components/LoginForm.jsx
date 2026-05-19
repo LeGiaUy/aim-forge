@@ -94,7 +94,7 @@ export default function LoginForm() {
       )}
 
       <Input
-        label_text='Email or username'
+        label_text='Email hoặc tên đăng nhập'
         name='identifier'
         value={form_state.identifier}
         onChange={handleChange}
@@ -104,12 +104,12 @@ export default function LoginForm() {
 
       <div className='relative'>
         <Input
-          label_text='Password'
+          label_text='Mật khẩu'
           name='password'
           value={form_state.password}
           onChange={handleChange}
           type={is_password_open ? 'text' : 'password'}
-          placeholder='Enter your password'
+          placeholder='Nhập mật khẩu của bạn'
           autoComplete='current-password'
           class_name='pr-11'
         />
@@ -131,20 +131,20 @@ export default function LoginForm() {
           onChange={handleChange}
           className='h-4 w-4 rounded border-white/20 bg-transparent text-[#7c3aed] accent-[#7c3aed]'
         />
-        Remember me
+        Ghi nhớ tài khoản
       </label>
 
       <Button type='submit' loading={is_loading}>
-        Login
+        Đăng nhập
       </Button>
 
       <p className='text-center text-xs text-[#94a3b8]'>
-        No account yet?{' '}
+        Chưa có tài khoản?{' '}
         <Link
           to='/register'
           className='font-semibold text-[#9f67ff] transition hover:text-cyan-300'
         >
-          Create account
+          Tạo tài khoản
         </Link>
       </p>
     </form>

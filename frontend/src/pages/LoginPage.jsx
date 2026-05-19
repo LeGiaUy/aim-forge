@@ -4,8 +4,8 @@ import LoginForm from '../components/LoginForm.jsx'
 export default function LoginPage() {
   return (
     <AuthLayout
-      title_text='Welcome back'
-      subtitle_text='Sign in to continue your AimForge setup'
+      title_text='Chào mừng trở lại'
+      subtitle_text='Đăng nhập để tiếp tục sử dụng AimForge'
     >
       <LoginForm />
     </AuthLayout>

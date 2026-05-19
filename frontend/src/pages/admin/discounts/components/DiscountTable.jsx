@@ -44,19 +44,19 @@ export default function DiscountTable({
         <thead className='border-b border-white/10 bg-white/5'>
           <tr>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Campaign
+              Chiến dịch
             </th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Value
+              Giá trị
             </th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Scope
+              Phạm vi
             </th>
             <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Status
+              Trạng thái
             </th>
             <th className='px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#94a3b8]'>
-              Actions
+              Thao tác
             </th>
           </tr>
         </thead>
@@ -70,7 +70,7 @@ export default function DiscountTable({
           ) : rows.length === 0 ? (
             <tr>
               <td colSpan={5} className='px-4 py-12 text-center text-[#64748b]'>
-                Chưa có chương trình giảm giá
+                Chưa có chiến dịch khuyến mãi
               </td>
             </tr>
           ) : (
@@ -88,7 +88,7 @@ export default function DiscountTable({
                     {item.type === 'PERCENT' ? `${item.value}%` : `${item.value} VND`}
                   </td>
                   <td className='px-4 py-3 text-[#cbd5e1]'>
-                    {item.scope} • {(item.products?.length || 0) + (item.variants?.length || 0)} targets
+                    {item.scope} • {(item.products?.length || 0) + (item.variants?.length || 0)} mục
                   </td>
                   <td className='px-4 py-3'>
                     <span className={`rounded-full px-2 py-0.5 text-xs ${status_color[item.status] || status_color.inactive}`}>
@@ -131,7 +131,7 @@ export default function DiscountTable({
                     <td colSpan={5} className='bg-white/[0.02] px-4 py-3'>
                       <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
                         <div>
-                          <p className='mb-1 text-xs font-semibold text-[#94a3b8]'>Products</p>
+                          <p className='mb-1 text-xs font-semibold text-[#94a3b8]'>Sản phẩm</p>
                           <div className='flex flex-wrap gap-1'>
                             {(item.products || []).map(p => (
                               <span key={p.product_id} className='rounded bg-cyan-500/15 px-2 py-0.5 text-xs text-cyan-200'>
@@ -141,7 +141,7 @@ export default function DiscountTable({
                           </div>
                         </div>
                         <div>
-                          <p className='mb-1 text-xs font-semibold text-[#94a3b8]'>Variants</p>
+                          <p className='mb-1 text-xs font-semibold text-[#94a3b8]'>Biến thể</p>
                           <div className='flex flex-wrap gap-1'>
                             {(item.variants || []).map(v => (
                               <span key={v.variant_id} className='rounded bg-fuchsia-500/15 px-2 py-0.5 text-xs text-fuchsia-200'>
