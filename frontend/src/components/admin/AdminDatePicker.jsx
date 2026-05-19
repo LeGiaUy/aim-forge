@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { DayPicker } from 'react-day-picker'
 import { vi } from 'date-fns/locale'
 import 'react-day-picker/style.css'
@@ -38,7 +39,13 @@ export default function AdminDatePicker({
   const auto_id = useId()
   const field_id = field_id_prop || auto_id
   const root_ref = useRef(null)
+  const input_ref = useRef(null)
+  const popover_ref = useRef(null)
   const [open_state, setOpenState] = useState(false)
+  const [popover_position, setPopoverPosition] = useState({
+    top: 0,
+    left: 0
+  })
 
   const selected_date = parse_ymd(value)
   const min_date = parse_ymd(min)
@@ -48,17 +55,40 @@ export default function AdminDatePicker({
   if (min_date) disabled_rules.before = min_date
   if (max_date) disabled_rules.after = max_date
 
+  const updatePopoverPosition = () => {
+    const input_element = input_ref.current
+    if (!input_element) return
+
+    const input_rect = input_element.getBoundingClientRect()
+    setPopoverPosition({
+      top: input_rect.bottom + 8,
+      left: input_rect.left
+    })
+  }
+
   useEffect(() => {
     if (!open_state) return undefined
 
+    updatePopoverPosition()
+
+    const handle_reposition = () => {
+      updatePopoverPosition()
+    }
+
+    window.addEventListener('resize', handle_reposition)
+    window.addEventListener('scroll', handle_reposition, true)
+
     const handle_click_outside = event => {
-      if (!root_ref.current?.contains(event.target)) {
-        setOpenState(false)
-      }
+      const click_target = event.target
+      if (root_ref.current?.contains(click_target)) return
+      if (popover_ref.current?.contains(click_target)) return
+      setOpenState(false)
     }
 
     document.addEventListener('mousedown', handle_click_outside)
     return () => {
+      window.removeEventListener('resize', handle_reposition)
+      window.removeEventListener('scroll', handle_reposition, true)
       document.removeEventListener('mousedown', handle_click_outside)
     }
   }, [open_state])
@@ -92,6 +122,7 @@ export default function AdminDatePicker({
 
       <div className='relative'>
         <input
+          ref={input_ref}
           id={field_id}
           type='text'
           readOnly
@@ -120,26 +151,34 @@ export default function AdminDatePicker({
           </span>
         </div>
 
-        {open_state ? (
-          <div
-            className='admin-day-picker-popover absolute left-0 z-50 mt-2'
-            role='dialog'
-            aria-label={label_text || 'Chọn ngày'}
-          >
-            <DayPicker
-              mode='single'
-              selected={selected_date}
-              onSelect={handle_select}
-              locale={vi}
-              disabled={
-                Object.keys(disabled_rules).length ?
-                  disabled_rules
-                : undefined
-              }
-              className='admin-day-picker'
-            />
-          </div>
-        ) : null}
+        {open_state && typeof document !== 'undefined' ?
+          createPortal(
+            <div
+              ref={popover_ref}
+              className='admin-day-picker-popover admin-day-picker-popover--fixed'
+              style={{
+                top: popover_position.top,
+                left: popover_position.left
+              }}
+              role='dialog'
+              aria-label={label_text || 'Chọn ngày'}
+            >
+              <DayPicker
+                mode='single'
+                selected={selected_date}
+                onSelect={handle_select}
+                locale={vi}
+                disabled={
+                  Object.keys(disabled_rules).length ?
+                    disabled_rules
+                  : undefined
+                }
+                className='admin-day-picker'
+              />
+            </div>,
+            document.body
+          )
+        : null}
       </div>
     </div>
   )

@@ -347,6 +347,11 @@ textarea.admin-input.admin-textarea-autosize {
   padding: 8px;
 }
 
+.admin-day-picker-popover--fixed {
+  position: fixed;
+  z-index: 9999;
+}
+
 .admin-day-picker {
   --rdp-accent-color: #7c3aed;
   --rdp-accent-background-color: rgba(124, 58, 237, 0.25);

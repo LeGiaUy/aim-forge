@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AdminDatePicker from '../../../components/admin/AdminDatePicker.jsx'
 import { StatusBadge } from '../../../components/admin/AdminUi.jsx'
 import { adminOrderApi } from '../../../services/adminApi.js'
 import { formatVnd } from '../../../utils/currency.js'
@@ -107,34 +108,28 @@ export default function OrderList() {
               ))}
             </select>
           </div>
-          <div>
-            <label className='admin-label'>Từ ngày</label>
-            <input
-              type='date'
-              value={filter_data.start_date}
-              onChange={event =>
-                setFilterData(prev_data => ({
-                  ...prev_data,
-                  start_date: event.target.value
-                }))
-              }
-              className='admin-input w-full'
-            />
-          </div>
-          <div>
-            <label className='admin-label'>Đến ngày</label>
-            <input
-              type='date'
-              value={filter_data.end_date}
-              onChange={event =>
-                setFilterData(prev_data => ({
-                  ...prev_data,
-                  end_date: event.target.value
-                }))
-              }
-              className='admin-input w-full'
-            />
-          </div>
+          <AdminDatePicker
+            label_text='Từ ngày'
+            value={filter_data.start_date}
+            on_change={start_date =>
+              setFilterData(prev_data => ({
+                ...prev_data,
+                start_date
+              }))
+            }
+            max={filter_data.end_date || undefined}
+          />
+          <AdminDatePicker
+            label_text='Đến ngày'
+            value={filter_data.end_date}
+            on_change={end_date =>
+              setFilterData(prev_data => ({
+                ...prev_data,
+                end_date
+              }))
+            }
+            min={filter_data.start_date || undefined}
+          />
         </div>
       </div>
 
