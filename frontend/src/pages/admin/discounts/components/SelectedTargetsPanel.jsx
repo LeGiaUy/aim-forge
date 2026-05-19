@@ -29,10 +29,10 @@ export default function SelectedTargetsPanel({
 
   return (
     <aside className='rounded-xl border border-white/10 bg-[#0c0c18] p-3'>
-      <h3 className='mb-2 text-sm font-semibold text-white'>Selected targets</h3>
+      <h3 className='mb-2 text-sm font-semibold text-white'>Các mục đã chọn</h3>
       <div className='space-y-2 text-xs'>
         <p className='text-[#94a3b8]'>
-          Products: {selected_product_ids.length} • Variants: {selected_variant_ids.length}
+          Sản phẩm: {selected_product_ids.length} • Biến thể: {selected_variant_ids.length}
         </p>
 
         {selected_product_ids.length > 0 && (
