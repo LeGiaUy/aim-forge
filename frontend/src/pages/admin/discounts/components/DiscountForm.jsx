@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import AdminDateTimePicker from '../../../../components/admin/AdminDateTimePicker.jsx'
 import ProductPicker from './ProductPicker.jsx'
 import VariantPicker from './VariantPicker.jsx'
 
@@ -113,28 +114,21 @@ export default function DiscountForm({
         <div className='rounded-xl border border-white/10 p-4'>
           <h3 className='mb-3 text-sm font-semibold text-white'>Lịch trình</h3>
           <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
-            <div>
-              <label className='admin-label'>Bắt đầu</label>
-              <input
-                type='datetime-local'
-                value={form.start_at}
-                onChange={event =>
-                  set_form(prev => ({ ...prev, start_at: event.target.value }))
-                }
-                className='admin-input w-full'
-              />
-            </div>
-            <div>
-              <label className='admin-label'>Kết thúc</label>
-              <input
-                type='datetime-local'
-                value={form.end_at}
-                onChange={event =>
-                  set_form(prev => ({ ...prev, end_at: event.target.value }))
-                }
-                className='admin-input w-full'
-              />
-            </div>
+            <AdminDateTimePicker
+              label_text='Bắt đầu'
+              value={form.start_at}
+              on_change={next_value =>
+                set_form(prev => ({ ...prev, start_at: next_value }))
+              }
+            />
+            <AdminDateTimePicker
+              label_text='Kết thúc'
+              value={form.end_at}
+              on_change={next_value =>
+                set_form(prev => ({ ...prev, end_at: next_value }))
+              }
+              min={form.start_at || undefined}
+            />
             <div>
               <label className='admin-label'>Trạng thái</label>
               <div className='rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-cyan-300'>

@@ -337,3 +337,52 @@ textarea.admin-input.admin-textarea-autosize {
   color: white;
   border-color: rgba(255,255,255,0.2);
 }
+
+/* ── Admin DatePicker (react-day-picker) ── */
+.admin-day-picker-popover {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0f0f1a;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  padding: 8px;
+}
+
+.admin-day-picker {
+  --rdp-accent-color: #7c3aed;
+  --rdp-accent-background-color: rgba(124, 58, 237, 0.25);
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-selected-border: 2px solid #9f67ff;
+  color: #e2e8f0;
+}
+
+.admin-day-picker .rdp-month_caption {
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.admin-day-picker .rdp-weekday {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.admin-day-picker .rdp-day_button {
+  border-radius: 8px;
+}
+
+.admin-day-picker .rdp-day_button:hover {
+  background: rgba(124, 58, 237, 0.15);
+}
+
+.admin-day-picker .rdp-disabled .rdp-day_button {
+  color: #475569;
+  opacity: 0.45;
+}
+
+.admin-day-picker .rdp-chevron {
+  fill: #cbd5e1;
+}
+
+.admin-day-picker .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: #22d3ee;
+}

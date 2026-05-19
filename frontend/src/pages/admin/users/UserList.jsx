@@ -17,6 +17,8 @@ export default function UserList() {
 
   const [filter_status, setFilterStatus] = useState('')
   const [filter_role, setFilterRole] = useState('')
+  const [search_query, setSearchQuery] = useState('')
+  const [debounced_search, setDebouncedSearch] = useState('')
   const [current_page, setCurrentPage] = useState(1)
   const [pagination_data, setPaginationData] = useState({
     page: 1,
@@ -36,7 +38,8 @@ export default function UserList() {
         page: current_page,
         limit: 10,
         status: filter_status || undefined,
-        role: filter_role || undefined
+        role: filter_role || undefined,
+        search: debounced_search || undefined
       })
 
       setUsersData(response.data.data?.items || [])
@@ -58,11 +61,20 @@ export default function UserList() {
     fetch_roles()
   }, [])
 
+  useEffect(() => {
+    const timer_id = setTimeout(() => {
+      setDebouncedSearch(search_query.trim())
+      setCurrentPage(1)
+    }, 350)
+
+    return () => clearTimeout(timer_id)
+  }, [search_query])
+
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     fetch_users()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current_page, filter_status, filter_role])
+  }, [current_page, filter_status, filter_role, debounced_search])
 
   const handle_status_change = async (user_id, status) => {
     try {
@@ -88,6 +100,17 @@ export default function UserList() {
         <h1 className='text-2xl font-semibold'>Người dùng</h1>
 
         <div className='flex flex-wrap gap-2'>
+          <input
+            type='search'
+            value={search_query}
+            onChange={event => setSearchQuery(event.target.value)}
+            placeholder='Tìm username hoặc email...'
+            className={
+              'min-w-[200px] flex-1 rounded-lg border border-white/10 ' +
+              'bg-[#0d0d1a] px-3 py-2 text-sm sm:min-w-[240px]'
+            }
+          />
+
           <select
             value={filter_status}
             onChange={event => {

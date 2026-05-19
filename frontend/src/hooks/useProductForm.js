@@ -650,7 +650,12 @@ export function useProductForm(initial_data = null, form_opts = {}) {
   const replace_create_variants = useCallback(
     next_variants => {
       if (edit_mode) return
-      setVariants(next_variants)
+      setVariants(prev_variants => {
+        if (typeof next_variants === 'function') {
+          return next_variants(prev_variants)
+        }
+        return next_variants
+      })
     },
     [edit_mode]
   )

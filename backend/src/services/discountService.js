@@ -96,7 +96,8 @@ const get_scope_from_ids = (product_ids, variant_ids) => {
 const parse_discounted_price = (base_price, type, value) => {
   const amount = to_number(value)
   if (type === 'PERCENT') {
-    return Math.max(0, Math.round(base_price * (1 - amount / 100)))
+    const discount_amount = Math.round(base_price * (amount / 100))
+    return Math.max(0, base_price - discount_amount)
   }
   if (type === 'FIXED') {
     return Math.max(0, Math.round(base_price - amount))
@@ -656,16 +657,27 @@ export const previewDiscount = async body => {
     })
   }
 
+  const configured_percent =
+    type === 'PERCENT' ? to_number(value) : null
+
   const rows = variants.map(item => {
     const base_price = to_number(item.price)
     const final_price = parse_discounted_price(base_price, type, value)
+    const effective_percent = calculateDiscountPercent(
+      base_price,
+      final_price
+    )
     return {
       variant_id: item.variant_id,
       sku: item.sku,
       product_name: item.product?.name || '',
       base_price,
       final_price,
-      discount_percent: calculateDiscountPercent(base_price, final_price),
+      discount_percent:
+        configured_percent != null ?
+          configured_percent
+        : effective_percent,
+      effective_discount_percent: effective_percent,
       below_zero: final_price <= 0,
       below_cost:
         item.cost_price != null && final_price < to_number(item.cost_price)
@@ -674,12 +686,18 @@ export const previewDiscount = async body => {
 
   const affected = rows.length
   const avg_discount_percent =
-    affected > 0
-      ? Math.round(
-          (rows.reduce((sum, row) => sum + row.discount_percent, 0) / affected) *
-            100
-        ) / 100
-      : 0
+    configured_percent != null ?
+      configured_percent
+    : affected > 0 ?
+      Math.round(
+        (
+          rows.reduce(
+            (sum, row) => sum + row.effective_discount_percent,
+            0
+          ) / affected
+        ) * 100
+      ) / 100
+    : 0
 
   return {
     affected_sku_count: affected,

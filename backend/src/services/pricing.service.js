@@ -11,8 +11,8 @@ const parse_discounted_price = (sell, discount_row) => {
   if (!discount_row) return null
   const discount_value = toNumber(discount_row.value)
   if (discount_row.type === 'PERCENT') {
-    const final = sell * (1 - discount_value / 100)
-    return Math.max(0, Math.round(final))
+    const discount_amount = Math.round(sell * (discount_value / 100))
+    return Math.max(0, sell - discount_amount)
   }
   if (discount_row.type === 'FIXED') {
     return Math.max(0, Math.round(sell - discount_value))
@@ -110,7 +110,9 @@ export const getVariantPricingPayload = variant => {
     discount_price: on_sale ? discounted_sell : null,
     discount_amount: on_sale ? calculateSaving(strike, discounted_sell) : null,
     discount_percent: on_sale
-      ? calculateDiscountPercent(strike, discounted_sell)
+      ? active_discount?.type === 'PERCENT'
+        ? active_discount.value
+        : calculateDiscountPercent(strike, discounted_sell)
       : null,
     discount_meta: active_discount
       ? {

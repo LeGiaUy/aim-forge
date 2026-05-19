@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import AdminDatePicker from '../../../components/admin/AdminDatePicker.jsx'
 import DashboardCharts from '../../../components/admin/dashboard/DashboardCharts.jsx'
 import FunnelStats from '../../../components/admin/dashboard/FunnelStats.jsx'
 import KpiCards from '../../../components/admin/dashboard/KpiCards.jsx'
@@ -104,24 +105,18 @@ export default function DashboardPage() {
         </div>
 
         <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
-          <label className='text-xs text-slate-300'>
-            Từ ngày
-            <input
-              type='date'
-              value={from_date}
-              onChange={event_data => setFromDate(event_data.target.value)}
-              className='mt-1 w-full rounded-lg border border-white/15 bg-[#0b0d1d] px-3 py-2 text-sm text-white outline-none focus:border-violet-400'
-            />
-          </label>
-          <label className='text-xs text-slate-300'>
-            Đến ngày
-            <input
-              type='date'
-              value={to_date}
-              onChange={event_data => setToDate(event_data.target.value)}
-              className='mt-1 w-full rounded-lg border border-white/15 bg-[#0b0d1d] px-3 py-2 text-sm text-white outline-none focus:border-violet-400'
-            />
-          </label>
+          <AdminDatePicker
+            label_text='Từ ngày'
+            value={from_date}
+            on_change={setFromDate}
+            max={to_date || undefined}
+          />
+          <AdminDatePicker
+            label_text='Đến ngày'
+            value={to_date}
+            on_change={setToDate}
+            min={from_date || undefined}
+          />
           <label className='text-xs text-slate-300'>
             Nhóm theo
             <select

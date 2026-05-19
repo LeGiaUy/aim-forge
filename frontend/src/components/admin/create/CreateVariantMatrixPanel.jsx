@@ -70,13 +70,14 @@ export default function CreateVariantMatrixPanel({
   const visible_rows_ref = useRef([])
   const selected_row_indices_ref = useRef(selected_row_indices)
 
-  const { register, getValues, reset, watch, setValue } = useForm({
+  const { getValues, reset, watch, setValue } = useForm({
     defaultValues: {
       bulk_price: '',
       bulk_stock: '',
     },
   })
   const bulk_price_value = watch('bulk_price')
+  const bulk_stock_value = watch('bulk_stock')
 
   const enriched = useMemo(
     () =>
@@ -171,18 +172,25 @@ export default function CreateVariantMatrixPanel({
   const apply_bulk_to_indices = useCallback(
     target_indices => {
       const { bulk_price, bulk_stock } = getValues()
-      const price_str = String(bulk_price ?? '').trim()
+      const price_str = normalize_price_input(bulk_price).trim()
       const stock_str = String(bulk_stock ?? '').trim()
       if (!price_str && stock_str === '') return
+
       const stock_num = stock_str === '' ? null : Number(stock_str)
+      const target_set = new Set(target_indices)
+
       patch_variant_fields(prev_list =>
         prev_list.map((variant_item, idx) => {
-          if (!target_indices.includes(idx)) return variant_item
+          if (!target_set.has(idx)) return variant_item
           const next_item = { ...variant_item }
-          if (price_str && !Number.isNaN(Number(price_str))) {
+          if (price_str) {
             next_item.price = price_str
           }
-          if (stock_num !== null && Number.isFinite(stock_num) && stock_num >= 0) {
+          if (
+            stock_num !== null &&
+            Number.isFinite(stock_num) &&
+            stock_num >= 0
+          ) {
             next_item.stock = stock_num
           }
           return next_item
@@ -389,7 +397,7 @@ export default function CreateVariantMatrixPanel({
           <input
             type='text'
             inputMode='numeric'
-            {...register('bulk_price')}
+            name='bulk_price'
             value={format_price_display(bulk_price_value)}
             onChange={event => {
               setValue(
@@ -406,7 +414,13 @@ export default function CreateVariantMatrixPanel({
           <input
             type='number'
             min='0'
-            {...register('bulk_stock')}
+            name='bulk_stock'
+            value={bulk_stock_value ?? ''}
+            onChange={event => {
+              setValue('bulk_stock', event.target.value, {
+                shouldDirty: true,
+              })
+            }}
             className='admin-input w-24'
           />
         </div>

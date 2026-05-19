@@ -36,6 +36,14 @@ export const get_users = async query_params => {
     }
   }
 
+  const search_term = String(query_params.search || '').trim()
+  if (search_term) {
+    where_clause.OR = [
+      { username: { contains: search_term, mode: 'insensitive' } },
+      { email: { contains: search_term, mode: 'insensitive' } }
+    ]
+  }
+
   const [users, total] = await Promise.all([
     prisma.user.findMany({
       where: where_clause,
